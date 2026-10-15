@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Brand } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export function PublicHeader() {
   return (
@@ -10,12 +10,15 @@ export function PublicHeader() {
       <Brand />
       <nav aria-label="Account" className="flex items-center gap-2">
         <ThemeToggle />
-        <Button asChild size="sm" variant="ghost">
-          <Link href="/login">Sign in</Link>
-        </Button>
-        <Button asChild size="sm">
-          <Link href="/signup">Join</Link>
-        </Button>
+        <Link
+          className={buttonVariants({ size: "sm", variant: "ghost" })}
+          href="/login"
+        >
+          Sign in
+        </Link>
+        <Link className={buttonVariants({ size: "sm" })} href="/signup">
+          Join
+        </Link>
       </nav>
     </header>
   );

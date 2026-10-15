@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, Heart, PawPrint, UsersRound } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { LandingAnnotation } from "@/components/showpiece/landing-annotation";
 
 const highlights = [
   {
@@ -30,22 +31,22 @@ export default function HomePage() {
           of the internet
         </p>
         <h1 className="text-5xl leading-[1.05] font-semibold tracking-tight sm:text-7xl">
-          Their world is better{" "}
-          <span className="text-primary">with you in it.</span>
+          Their world is better <LandingAnnotation />
         </h1>
         <p className="text-muted-foreground mt-6 max-w-xl text-lg leading-8">
           Pet Pulse brings pet people together to celebrate the everyday
           adventures, the goofy faces, and the love that makes a family.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button asChild size="lg">
-            <Link href="/signup">
-              Find your pack <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/login">I have an account</Link>
-          </Button>
+          <Link className={buttonVariants({ size: "lg" })} href="/signup">
+            Find your pack <ArrowRight className="size-4" />
+          </Link>
+          <Link
+            className={buttonVariants({ size: "lg", variant: "outline" })}
+            href="/login"
+          >
+            I have an account
+          </Link>
         </div>
       </section>
       <aside

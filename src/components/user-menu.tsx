@@ -16,9 +16,11 @@ import {
 import { signOutAction } from "@/lib/auth/actions";
 
 export function UserMenu({
+  userId,
   username,
   email,
 }: {
+  userId: string;
   username: string;
   email: string | null;
 }) {
@@ -26,17 +28,19 @@ export function UserMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          aria-label="Open user menu"
-          className="gap-2 rounded-full pr-3 pl-1.5"
-          variant="ghost"
-        >
-          <Avatar className="size-8">
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-          <span className="hidden max-w-32 truncate sm:inline">{username}</span>
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            aria-label="Open user menu"
+            className="gap-2 rounded-full pr-3 pl-1.5"
+            variant="ghost"
+          />
+        }
+      >
+        <Avatar className="size-8">
+          <AvatarFallback seed={userId}>{initials}</AvatarFallback>
+        </Avatar>
+        <span className="hidden max-w-32 truncate sm:inline">{username}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
@@ -48,17 +52,15 @@ export function UserMenu({
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href={`/${encodeURIComponent(username)}`}>
-            <UserRound className="mr-2 size-4" />
-            Profile
-          </Link>
+        <DropdownMenuItem
+          render={<Link href={`/${encodeURIComponent(username)}`} />}
+        >
+          <UserRound className="mr-2 size-4" />
+          Profile
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/settings">
-            <Settings className="mr-2 size-4" />
-            Settings
-          </Link>
+        <DropdownMenuItem render={<Link href="/settings" />}>
+          <Settings className="mr-2 size-4" />
+          Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <form action={signOutAction}>

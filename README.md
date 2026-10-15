@@ -73,6 +73,44 @@ Email/password signup and login go through `POST /api/v1/auth/signup` and `POST 
 
 When signup returns `requires_email_confirmation: true`, the UI asks the person to confirm their email and does not create a signed-in state. The backend currently does not accept a redirect URL for signup. To ensure confirmation links return to `/auth/callback` in local, production, and Vercel preview environments, the minimal backend change is to pass a configurable `email_redirect_to` to Supabase Auth during signup (and allow that URL in Supabase Auth URL Configuration). The callback route is implemented, but confirmation cannot reliably reach it until that backend setting is added. The callback exchanges Supabase's code server-side. The current API has no public-profile lookup or public-post lookup, so those routes intentionally show capability placeholders instead of fabricated profile/post content.
 
+## UI components
+
+The registries copy source code into this repository. Keep the interface cohesive by using each source only for its assigned role:
+
+| Priority | Library                           | Use                                                                                  |
+| -------- | --------------------------------- | ------------------------------------------------------------------------------------ |
+| 1        | shadcn/ui with Base UI primitives | Core forms, dialogs, menus, tabs, sheets, and toasts.                                |
+| 2        | Space UI                          | Richer Base UI components, deterministic generated avatars, and small visual extras. |
+| 3        | Arc UI, free components only      | Product interactions that are not already covered by shadcn/ui.                      |
+| 4        | Componentry                       | Showpiece effects on the landing page, onboarding, and empty states only.            |
+
+Install only free components. Do not install Arc UI items marked Pro, or anything requiring payment, a license key, or an account. Read the component and library license before adding source. Licenses checked on 15 October 2026: [Space UI Status Badge](https://www.spaceui.one/components/status-badge) and [Space UI Avatars](https://github.com/usespaceui/avatars/blob/main/LICENSE) are MIT; [Arc UI](https://uiarc.dev/license) publishes its free source under MIT and separates paid Pro components; [Componentry](https://github.com/harshjdhv/componentry/blob/main/LICENSE) is MIT. Recheck licenses before future installs.
+
+Current install examples:
+
+```sh
+pnpm dlx shadcn@latest add button input label card avatar dropdown-menu dialog sonner
+pnpm dlx shadcn@latest add @spaceui/components-spaceui-status-badge
+pnpm add @usespaceui/avatars
+pnpm dlx shadcn@latest add @arc/command-palette
+pnpm dlx shadcn@latest add @componentry/annotated-text
+```
+
+Space UI avatars are generated locally from the stable user UUID. The package is MIT and does not make network requests. Arc's command palette is a full searchable product action surface, while the shadcn command component remains the base primitive. Componentry's annotated text is dynamically imported on the landing page. Keep showpiece effects out of feeds and scrolling lists.
+
+Keep files in these folders:
+
+```text
+src/components/ui/          shadcn/ui primitives
+src/components/spaceui/     Space UI registry source
+src/components/arc/         Arc UI registry source
+src/components/showpiece/   Componentry source and dynamic wrappers
+```
+
+The Componentry registry currently targets `src/components/ui` in its manifest, so move newly installed files into `src/components/showpiece` and update imports. After every install, review the copied source, remove unused variants, and fix lint or type errors. Use existing CSS variables and Tailwind theme classes for colors, borders, radii, and fonts. If a component brings CSS modules, map every color, border, and radius to `--background`, `--foreground`, `--primary`, `--muted`, `--border`, and `--radius`. Animated components must respect `prefers-reduced-motion`; load Componentry effects with `next/dynamic` and keep them on landing/onboarding/empty-state surfaces only. Use one component per job and prefer shadcn/ui when it already covers the need.
+
+Visit `/dev/components` in development to review the installed components in light and dark themes. The route returns 404 in production.
+
 ## Project structure
 
 ```text
@@ -82,6 +120,9 @@ src/app/(auth)/                Signup and login pages
 src/app/(app)/                 Protected feed, notifications, and settings
 src/app/auth/callback/          Supabase auth callback route handler
 src/components/ui/              shadcn-style UI primitives
+src/components/spaceui/         Free Space UI registry source
+src/components/arc/             Free Arc UI registry source
+src/components/showpiece/       Componentry showpieces and dynamic wrappers
 src/lib/api/                    Generated FastAPI schema and typed client
 src/lib/supabase/                Supabase SSR/browser clients and session proxy
 src/env.ts                      Zod environment validation
