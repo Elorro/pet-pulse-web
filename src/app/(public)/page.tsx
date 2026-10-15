@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Heart, PawPrint, UsersRound } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 const highlights = [
   {
@@ -38,14 +38,15 @@ export default function HomePage() {
           adventures, the goofy faces, and the love that makes a family.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button asChild size="lg">
-            <Link href="/signup">
-              Find your pack <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/login">I have an account</Link>
-          </Button>
+          <Link className={buttonVariants({ size: "lg" })} href="/signup">
+            Find your pack <ArrowRight className="size-4" />
+          </Link>
+          <Link
+            className={buttonVariants({ size: "lg", variant: "outline" })}
+            href="/login"
+          >
+            I have an account
+          </Link>
         </div>
       </section>
       <aside
