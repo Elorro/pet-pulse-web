@@ -42,7 +42,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <ThemeToggle />
-          <UserMenu email={profile.email} username={profile.username} />
+          <UserMenu
+            email={profile.email}
+            userId={profile.id}
+            username={profile.username}
+          />
         </div>
       </header>
       <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-10">

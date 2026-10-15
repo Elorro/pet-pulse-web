@@ -16,9 +16,11 @@ import {
 import { signOutAction } from "@/lib/auth/actions";
 
 export function UserMenu({
+  userId,
   username,
   email,
 }: {
+  userId: string;
   username: string;
   email: string | null;
 }) {
@@ -29,16 +31,16 @@ export function UserMenu({
       <DropdownMenuTrigger
         render={
           <Button
-          aria-label="Open user menu"
-          className="gap-2 rounded-full pr-3 pl-1.5"
-          variant="ghost"
+            aria-label="Open user menu"
+            className="gap-2 rounded-full pr-3 pl-1.5"
+            variant="ghost"
           />
         }
       >
-          <Avatar className="size-8">
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-          <span className="hidden max-w-32 truncate sm:inline">{username}</span>
+        <Avatar className="size-8">
+          <AvatarFallback seed={userId}>{initials}</AvatarFallback>
+        </Avatar>
+        <span className="hidden max-w-32 truncate sm:inline">{username}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>

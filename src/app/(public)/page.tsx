@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Heart, PawPrint, UsersRound } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
+import { LandingAnnotation } from "@/components/showpiece/landing-annotation";
 
 const highlights = [
   {
@@ -30,8 +31,7 @@ export default function HomePage() {
           of the internet
         </p>
         <h1 className="text-5xl leading-[1.05] font-semibold tracking-tight sm:text-7xl">
-          Their world is better{" "}
-          <span className="text-primary">with you in it.</span>
+          Their world is better <LandingAnnotation />
         </h1>
         <p className="text-muted-foreground mt-6 max-w-xl text-lg leading-8">
           Pet Pulse brings pet people together to celebrate the everyday

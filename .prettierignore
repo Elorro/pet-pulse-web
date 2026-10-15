@@ -2,3 +2,4 @@
 node_modules
 coverage
 src/lib/api/schema.d.ts
+pnpm-lock.yaml
