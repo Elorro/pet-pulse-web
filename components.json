@@ -17,5 +17,10 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
+  "registries": {
+    "@spaceui": "https://www.spaceui.one/r/{name}.json",
+    "@arc": "https://uiarc.dev/r/{name}.json",
+    "@componentry": "https://componentry.dev/r/{name}.json"
+  },
   "iconLibrary": "lucide"
 }
