@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -55,6 +56,17 @@ export default async function FeedPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {post.media_url ? (
+                <div className="relative mb-4 aspect-video overflow-hidden rounded-lg">
+                  <Image
+                    alt="Photo shared with the post"
+                    className="object-cover"
+                    fill
+                    sizes="(max-width: 672px) 100vw, 672px"
+                    src={post.media_url}
+                  />
+                </div>
+              ) : null}
               <p className="leading-7 whitespace-pre-wrap">{post.content}</p>
             </CardContent>
           </Card>

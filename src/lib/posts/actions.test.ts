@@ -10,7 +10,10 @@ vi.mock("@/lib/api/client", () => ({ api: { POST: post } }));
 vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("next/navigation", () => ({ redirect }));
 
-import { createPostAction } from "@/lib/posts/actions";
+import {
+  createPostAction,
+  requestMediaUploadAction,
+} from "@/lib/posts/actions";
 
 describe("createPostAction", () => {
   beforeEach(() => {
@@ -73,5 +76,56 @@ describe("createPostAction", () => {
     const result = await createPostAction({}, formData);
 
     expect(result.error).toBe("Too short. Try again");
+  });
+
+  it("passes media_path only when it is set", async () => {
+    post.mockResolvedValue({ data: { id: "post-1" }, error: undefined, response: { status: 201 } });
+    const withMedia = new FormData();
+    withMedia.set("content", "Hello");
+    withMedia.set("media_path", "user-1/photo.png");
+    await createPostAction({}, withMedia);
+    expect(post).toHaveBeenCalledWith("/api/v1/posts/", {
+      body: { content: "Hello", media_path: "user-1/photo.png" },
+    });
+
+    post.mockClear();
+    post.mockResolvedValue({ data: { id: "post-2" }, error: undefined, response: { status: 201 } });
+    const withoutMedia = new FormData();
+    withoutMedia.set("content", "Hello");
+    withoutMedia.set("media_path", "");
+    await createPostAction({}, withoutMedia);
+    expect(post).toHaveBeenCalledWith("/api/v1/posts/", {
+      body: { content: "Hello" },
+    });
+  });
+});
+
+describe("requestMediaUploadAction", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("maps a successful upload response", async () => {
+    post.mockResolvedValue({
+      data: { path: "user-1/photo.png", upload_url: "https://storage.test/upload" },
+      error: undefined,
+      response: { status: 201 },
+    });
+    await expect(requestMediaUploadAction("image/png")).resolves.toEqual({
+      path: "user-1/photo.png",
+      uploadUrl: "https://storage.test/upload",
+    });
+    expect(post).toHaveBeenCalledWith("/api/v1/posts/media-uploads", {
+      body: { content_type: "image/png" },
+    });
+  });
+
+  it("redirects to login on 401", async () => {
+    post.mockResolvedValue({ error: { detail: "Unauthorized" }, response: { status: 401 } });
+    await requestMediaUploadAction("image/png");
+    expect(redirect).toHaveBeenCalledWith("/login?next=/post/new");
+  });
+
+  it("returns API errors", async () => {
+    post.mockResolvedValue({ error: { detail: "Unsupported" }, response: { status: 422 } });
+    await expect(requestMediaUploadAction("image/png")).resolves.toEqual({ error: "Unsupported" });
   });
 });
