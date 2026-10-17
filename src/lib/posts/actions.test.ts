@@ -79,7 +79,11 @@ describe("createPostAction", () => {
   });
 
   it("passes media_path only when it is set", async () => {
-    post.mockResolvedValue({ data: { id: "post-1" }, error: undefined, response: { status: 201 } });
+    post.mockResolvedValue({
+      data: { id: "post-1" },
+      error: undefined,
+      response: { status: 201 },
+    });
     const withMedia = new FormData();
     withMedia.set("content", "Hello");
     withMedia.set("media_path", "user-1/photo.png");
@@ -89,7 +93,11 @@ describe("createPostAction", () => {
     });
 
     post.mockClear();
-    post.mockResolvedValue({ data: { id: "post-2" }, error: undefined, response: { status: 201 } });
+    post.mockResolvedValue({
+      data: { id: "post-2" },
+      error: undefined,
+      response: { status: 201 },
+    });
     const withoutMedia = new FormData();
     withoutMedia.set("content", "Hello");
     withoutMedia.set("media_path", "");
@@ -105,7 +113,10 @@ describe("requestMediaUploadAction", () => {
 
   it("maps a successful upload response", async () => {
     post.mockResolvedValue({
-      data: { path: "user-1/photo.png", upload_url: "https://storage.test/upload" },
+      data: {
+        path: "user-1/photo.png",
+        upload_url: "https://storage.test/upload",
+      },
       error: undefined,
       response: { status: 201 },
     });
@@ -119,13 +130,21 @@ describe("requestMediaUploadAction", () => {
   });
 
   it("redirects to login on 401", async () => {
-    post.mockResolvedValue({ error: { detail: "Unauthorized" }, response: { status: 401 } });
+    post.mockResolvedValue({
+      error: { detail: "Unauthorized" },
+      response: { status: 401 },
+    });
     await requestMediaUploadAction("image/png");
     expect(redirect).toHaveBeenCalledWith("/login?next=/post/new");
   });
 
   it("returns API errors", async () => {
-    post.mockResolvedValue({ error: { detail: "Unsupported" }, response: { status: 422 } });
-    await expect(requestMediaUploadAction("image/png")).resolves.toEqual({ error: "Unsupported" });
+    post.mockResolvedValue({
+      error: { detail: "Unsupported" },
+      response: { status: 422 },
+    });
+    await expect(requestMediaUploadAction("image/png")).resolves.toEqual({
+      error: "Unsupported",
+    });
   });
 });

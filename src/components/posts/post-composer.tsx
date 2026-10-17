@@ -35,7 +35,9 @@ type SelectedImage = { file: File; previewUrl: string };
 export function PostComposer() {
   const [state, formAction, pending] = useActionState(createPostAction, {});
   const [content, setContent] = useState("");
-  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
+  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(
+    null,
+  );
   const [mediaPath, setMediaPath] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -148,7 +150,11 @@ export function PostComposer() {
 
   return (
     <Card
-      className={dragging ? "border-2 border-dashed border-primary bg-primary/5" : undefined}
+      className={
+        dragging
+          ? "border-primary bg-primary/5 border-2 border-dashed"
+          : undefined
+      }
       onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
       onDragOver={(event) => {
@@ -182,7 +188,10 @@ export function PostComposer() {
               rows={5}
               value={content}
             />
-            <p className="text-muted-foreground text-right text-xs" aria-live="polite">
+            <p
+              className="text-muted-foreground text-right text-xs"
+              aria-live="polite"
+            >
               {content.length} / 5000
             </p>
           </div>

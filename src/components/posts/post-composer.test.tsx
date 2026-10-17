@@ -6,7 +6,10 @@ const { toastError } = vi.hoisted(() => ({ toastError: vi.fn() }));
 vi.mock("sonner", () => ({ toast: { error: toastError } }));
 vi.mock("@/lib/posts/actions", () => ({
   createPostAction: vi.fn(async () => ({})),
-  requestMediaUploadAction: vi.fn(async () => ({ path: "user/photo.png", uploadUrl: "https://storage.test" })),
+  requestMediaUploadAction: vi.fn(async () => ({
+    path: "user/photo.png",
+    uploadUrl: "https://storage.test",
+  })),
 }));
 
 import { PostComposer } from "@/components/posts/post-composer";
@@ -43,12 +46,18 @@ describe("PostComposer", () => {
 
   it("shows a selected photo preview and can remove it", () => {
     render(<PostComposer />);
-    const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+    const input =
+      document.querySelector<HTMLInputElement>('input[type="file"]');
     const file = new File(["image"], "photo.png", { type: "image/png" });
     fireEvent.change(input!, { target: { files: [file] } });
 
-    expect(screen.getByAltText("Photo preview")).toHaveAttribute("src", "blob:preview");
-    expect(screen.getByRole("button", { name: "Remove photo" })).toBeInTheDocument();
+    expect(screen.getByAltText("Photo preview")).toHaveAttribute(
+      "src",
+      "blob:preview",
+    );
+    expect(
+      screen.getByRole("button", { name: "Remove photo" }),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Remove photo" }));
     expect(screen.queryByAltText("Photo preview")).not.toBeInTheDocument();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:preview");
@@ -56,9 +65,12 @@ describe("PostComposer", () => {
 
   it("shows an error and no preview for an invalid file", () => {
     render(<PostComposer />);
-    const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+    const input =
+      document.querySelector<HTMLInputElement>('input[type="file"]');
     fireEvent.change(input!, {
-      target: { files: [new File(["text"], "notes.txt", { type: "text/plain" })] },
+      target: {
+        files: [new File(["text"], "notes.txt", { type: "text/plain" })],
+      },
     });
     expect(toastError).toHaveBeenCalled();
     expect(screen.queryByAltText("Photo preview")).not.toBeInTheDocument();
