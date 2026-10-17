@@ -6,6 +6,16 @@ import { redirect } from "next/navigation";
 import { api } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 
+export type ImageContentType =
+  | "image/jpeg"
+  | "image/png"
+  | "image/webp"
+  | "image/gif";
+
+export type MediaUploadResult =
+  | { path: string; uploadUrl: string }
+  | { error: string };
+
 export type PostActionState = { error?: string };
 
 function value(formData: FormData, name: string) {
@@ -18,12 +28,13 @@ export async function createPostAction(
   formData: FormData,
 ): Promise<PostActionState> {
   const content = value(formData, "content").trim();
+  const mediaPath = value(formData, "media_path");
   if (!content) return { error: "Write something before posting." };
   if (content.length > 5000)
     return { error: "Posts must be 5000 characters or fewer." };
 
   const { error, response } = await api.POST("/api/v1/posts/", {
-    body: { content },
+    body: { content, ...(mediaPath ? { media_path: mediaPath } : {}) },
   });
 
   if (response.status === 401) redirect("/login?next=/post/new");
@@ -31,4 +42,18 @@ export async function createPostAction(
 
   revalidatePath("/feed");
   redirect("/feed");
+}
+
+export async function requestMediaUploadAction(
+  contentType: ImageContentType,
+): Promise<MediaUploadResult> {
+  const { data, error, response } = await api.POST(
+    "/api/v1/posts/media-uploads",
+    { body: { content_type: contentType } },
+  );
+
+  if (response.status === 401) redirect("/login?next=/post/new");
+  if (error || !data) return { error: errorMessage(error) };
+
+  return { path: data.path, uploadUrl: data.upload_url };
 }

@@ -128,6 +128,18 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    /** TODO: regenerate with pnpm gen:api */
+    "/api/v1/posts/media-uploads": {
+        parameters: { query?: never; header?: never; path?: never; cookie?: never };
+        get?: never;
+        put?: never;
+        post: operations["request_media_upload_api_v1_posts_media_uploads_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -154,6 +166,8 @@ export interface components {
         PostCreate: {
             /** Content */
             content: string;
+            /** Media Path */
+            media_path?: string | null;
         };
         /**
          * PostResponse
@@ -182,6 +196,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Media Url */
+            media_url: string | null;
         };
         /**
          * ProfileResponse
@@ -475,6 +491,25 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+        };
+    };
+    /** TODO: regenerate with pnpm gen:api */
+    request_media_upload_api_v1_posts_media_uploads_post: {
+        parameters: { query?: never; header?: never; path?: never; cookie?: never };
+        requestBody: {
+            content: {
+                "application/json": { content_type: "image/jpeg" | "image/png" | "image/webp" | "image/gif" };
+            };
+        };
+        responses: {
+            201: {
+                headers: { [name: string]: unknown };
+                content: { "application/json": { path: string; upload_url: string } };
+            };
+            422: {
+                headers: { [name: string]: unknown };
+                content: { "application/json": components["schemas"]["HTTPValidationError"] };
             };
         };
     };
