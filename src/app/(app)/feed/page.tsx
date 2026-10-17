@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import {
   Card,
@@ -26,6 +27,12 @@ export default async function FeedPage() {
         <p className="text-muted-foreground mt-2">
           A little window into the lives of pets and their people.
         </p>
+        <Link
+          className="text-primary mt-4 inline-flex text-sm font-semibold hover:underline"
+          href="/post/new"
+        >
+          Write a post
+        </Link>
       </div>
       {error ? (
         <Card>
@@ -60,7 +67,13 @@ export default async function FeedPage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              Post creation will be added with the first product feature.
+              Be the first to share a moment.{" "}
+              <Link
+                className="text-primary font-semibold hover:underline"
+                href="/post/new"
+              >
+                Write a post
+              </Link>
             </p>
           </CardContent>
         </Card>
