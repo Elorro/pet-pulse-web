@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { toastError } = vi.hoisted(() => ({ toastError: vi.fn() }));
@@ -13,6 +13,10 @@ vi.mock("@/lib/posts/actions", () => ({
 }));
 
 import { PostComposer } from "@/components/posts/post-composer";
+import {
+  createPostAction,
+  requestMediaUploadAction,
+} from "@/lib/posts/actions";
 
 describe("PostComposer", () => {
   beforeEach(() => {
@@ -84,5 +88,29 @@ describe("PostComposer", () => {
       dataTransfer: { types: ["Files"], files: [file], items: [] },
     });
     expect(screen.getByAltText("Photo preview")).toBeInTheDocument();
+  });
+
+  it("uploads a photo once and posts it with the text", async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<PostComposer />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Your post" }), {
+      target: { value: "Milo at the park" },
+    });
+    const input =
+      document.querySelector<HTMLInputElement>('input[type="file"]');
+    fireEvent.change(input!, {
+      target: {
+        files: [new File(["image"], "photo.png", { type: "image/png" })],
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Post" }));
+
+    await waitFor(() => expect(createPostAction).toHaveBeenCalledTimes(1));
+    const formData = vi.mocked(createPostAction).mock.calls[0][1];
+    expect(formData.get("content")).toBe("Milo at the park");
+    expect(formData.get("media_path")).toBe("user/photo.png");
+    expect(requestMediaUploadAction).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

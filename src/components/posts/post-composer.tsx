@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ImageIcon, X } from "lucide-react";
 import {
+  startTransition,
   useActionState,
   useEffect,
   useRef,
@@ -42,7 +43,6 @@ export function PostComposer() {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
   const dragDepth = useRef(0);
   const busy = pending || uploading;
 
@@ -106,44 +106,48 @@ export function PostComposer() {
     chooseImage(file);
   }
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    if (selectedImage && mediaPath) {
-      setUploading(false);
-      return;
+  async function uploadImage(image: SelectedImage) {
+    const uploadRequest = await requestMediaUploadAction(
+      image.file.type as ImageContentType,
+    );
+    if ("error" in uploadRequest) {
+      toast.error(uploadRequest.error);
+      return null;
     }
+
+    const uploadResponse = await fetch(uploadRequest.uploadUrl, {
+      method: "PUT",
+      body: image.file,
+      headers: { "content-type": image.file.type, "x-upsert": "false" },
+    });
+    if (!uploadResponse.ok) {
+      toast.error("The photo could not be uploaded. Please try again.");
+      return null;
+    }
+    return uploadRequest.path;
+  }
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     if (!selectedImage) return;
 
+    // Submit the action ourselves: the textarea is disabled while uploading,
+    // so a native re-submit would drop its value from the form data.
     event.preventDefault();
     if (!content.trim()) return;
     setUploading(true);
     try {
-      const uploadRequest = await requestMediaUploadAction(
-        selectedImage.file.type as ImageContentType,
-      );
-      if ("error" in uploadRequest) {
-        setUploading(false);
-        toast.error(uploadRequest.error);
-        return;
-      }
+      // Reuse an earlier upload if a previous post attempt failed.
+      const path = mediaPath || (await uploadImage(selectedImage));
+      if (!path) return;
+      setMediaPath(path);
 
-      const uploadResponse = await fetch(uploadRequest.uploadUrl, {
-        method: "PUT",
-        body: selectedImage.file,
-        headers: {
-          "content-type": selectedImage.file.type,
-          "x-upsert": "false",
-        },
-      });
-      if (!uploadResponse.ok) {
-        toast.error("The photo could not be uploaded. Please try again.");
-        setUploading(false);
-        return;
-      }
-
-      setMediaPath(uploadRequest.path);
-      window.setTimeout(() => formRef.current?.requestSubmit(), 0);
+      const formData = new FormData();
+      formData.set("content", content);
+      formData.set("media_path", path);
+      startTransition(() => formAction(formData));
     } catch {
       toast.error("The photo could not be uploaded. Please try again.");
+    } finally {
       setUploading(false);
     }
   }
@@ -168,12 +172,7 @@ export function PostComposer() {
         <CardDescription>Tell everyone what your pet is up to.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form
-          action={formAction}
-          className="grid gap-4"
-          onSubmit={onSubmit}
-          ref={formRef}
-        >
+        <form action={formAction} className="grid gap-4" onSubmit={onSubmit}>
           <div className="grid gap-2">
             <Label htmlFor="content">Your post</Label>
             <Textarea
@@ -195,7 +194,6 @@ export function PostComposer() {
               {content.length} / 5000
             </p>
           </div>
-          <input name="media_path" type="hidden" value={mediaPath} />
           <input
             accept="image/jpeg,image/png,image/webp,image/gif"
             className="sr-only"
