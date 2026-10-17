@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { api } from "@/lib/api/client";
+import { errorMessage } from "@/lib/api/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type AuthActionState = { error?: string; success?: string };
@@ -14,19 +15,6 @@ function value(formData: FormData, name: string) {
 
 function safeDestination(value: string) {
   return value.startsWith("/") && !value.startsWith("//") ? value : "/feed";
-}
-
-function errorMessage(error: unknown) {
-  if (error && typeof error === "object" && "detail" in error) {
-    const detail = error.detail;
-    if (typeof detail === "string") return detail;
-    if (Array.isArray(detail))
-      return detail
-        .map((item) => item.msg)
-        .filter(Boolean)
-        .join(". ");
-  }
-  return "We could not complete that request. Please try again.";
 }
 
 async function saveSession(session: {

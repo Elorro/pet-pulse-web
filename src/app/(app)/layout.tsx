@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 
 const navigation = [
@@ -41,6 +42,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
+          <Button render={<Link href="/post/new" />} size="sm">
+            New post
+          </Button>
           <ThemeToggle />
           <UserMenu
             email={profile.email}
