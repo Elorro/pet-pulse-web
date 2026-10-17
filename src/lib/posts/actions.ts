@@ -7,14 +7,10 @@ import { api } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 
 export type ImageContentType =
-  | "image/jpeg"
-  | "image/png"
-  | "image/webp"
-  | "image/gif";
+  "image/jpeg" | "image/png" | "image/webp" | "image/gif";
 
 export type MediaUploadResult =
-  | { path: string; uploadUrl: string }
-  | { error: string };
+  { path: string; uploadUrl: string } | { error: string };
 
 export type PostActionState = { error?: string };
 

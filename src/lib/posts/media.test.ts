@@ -8,7 +8,9 @@ describe("validateImage", () => {
   });
 
   it("rejects unsupported types", () => {
-    expect(validateImage(new File(["text"], "notes.txt", { type: "text/plain" }))).toContain("JPEG");
+    expect(
+      validateImage(new File(["text"], "notes.txt", { type: "text/plain" })),
+    ).toContain("JPEG");
   });
 
   it("rejects images larger than 5 MB", () => {
