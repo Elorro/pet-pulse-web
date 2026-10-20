@@ -56,11 +56,41 @@ export async function requestMediaUploadAction(
 
 export type LikePostResult =
   { likeCount: number } | { unauthorized: true } | { error: string };
+export type PostLikeStatusResult =
+  | { likeCount: number; liked: boolean }
+  | { unauthorized: true }
+  | { error: string };
+
+export async function getPostLikeStatusAction(
+  postId: string,
+): Promise<PostLikeStatusResult> {
+  const { data, error, response } = await api.GET(
+    "/api/v1/posts/{id}/like",
+    { params: { path: { id: postId } } },
+  );
+
+  if (response.status === 401) return { unauthorized: true };
+  if (error || !data) return { error: errorMessage(error) };
+
+  return { likeCount: data.like_count, liked: data.liked };
+}
 
 export async function likePostAction(postId: string): Promise<LikePostResult> {
   const { data, error, response } = await api.POST("/api/v1/posts/{id}/like", {
     params: { path: { id: postId } },
   });
+
+  if (response.status === 401) return { unauthorized: true };
+  if (error || !data) return { error: errorMessage(error) };
+
+  return { likeCount: data.like_count };
+}
+
+export async function unlikePostAction(postId: string): Promise<LikePostResult> {
+  const { data, error, response } = await api.DELETE(
+    "/api/v1/posts/{id}/like",
+    { params: { path: { id: postId } } },
+  );
 
   if (response.status === 401) return { unauthorized: true };
   if (error || !data) return { error: errorMessage(error) };
