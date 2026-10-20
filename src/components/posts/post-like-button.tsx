@@ -6,7 +6,7 @@ import { Heart } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api/client";
+import { api } from "@/lib/api/browser-client";
 import { errorMessage } from "@/lib/api/errors";
 
 export function PostLikeButton({
