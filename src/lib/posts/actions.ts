@@ -53,3 +53,17 @@ export async function requestMediaUploadAction(
 
   return { path: data.path, uploadUrl: data.upload_url };
 }
+
+export type LikePostResult =
+  { likeCount: number } | { unauthorized: true } | { error: string };
+
+export async function likePostAction(postId: string): Promise<LikePostResult> {
+  const { data, error, response } = await api.POST("/api/v1/posts/{id}/like", {
+    params: { path: { id: postId } },
+  });
+
+  if (response.status === 401) return { unauthorized: true };
+  if (error || !data) return { error: errorMessage(error) };
+
+  return { likeCount: data.like_count };
+}

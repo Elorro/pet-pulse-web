@@ -6,8 +6,7 @@ import { Heart } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api/browser-client";
-import { errorMessage } from "@/lib/api/errors";
+import { likePostAction } from "@/lib/posts/actions";
 
 export function PostLikeButton({
   postId,
@@ -25,21 +24,18 @@ export function PostLikeButton({
     if (pending || liked) return;
     setPending(true);
     try {
-      const { data, error, response } = await api.POST(
-        "/api/v1/posts/{id}/like",
-        { params: { path: { id: postId } } },
-      );
-      if (response.status === 401) {
+      const result = await likePostAction(postId);
+      if ("unauthorized" in result) {
         router.push(
           `/login?next=${encodeURIComponent(window.location.pathname)}`,
         );
         return;
       }
-      if (error || !data) {
-        toast.error(errorMessage(error));
+      if ("error" in result) {
+        toast.error(result.error);
         return;
       }
-      setCount(data.like_count);
+      setCount(result.likeCount);
       setLiked(true);
     } catch {
       toast.error("We could not complete that request. Please try again.");

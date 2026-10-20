@@ -12,6 +12,7 @@ vi.mock("next/navigation", () => ({ redirect }));
 
 import {
   createPostAction,
+  likePostAction,
   requestMediaUploadAction,
 } from "@/lib/posts/actions";
 
@@ -145,6 +146,44 @@ describe("requestMediaUploadAction", () => {
     });
     await expect(requestMediaUploadAction("image/png")).resolves.toEqual({
       error: "Unsupported",
+    });
+  });
+});
+
+describe("likePostAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("likes the post and returns the API's count", async () => {
+    post.mockResolvedValue({
+      data: { like_count: 3 },
+      error: undefined,
+      response: { status: 200 },
+    });
+    await expect(likePostAction("post-1")).resolves.toEqual({ likeCount: 3 });
+    expect(post).toHaveBeenCalledWith("/api/v1/posts/{id}/like", {
+      params: { path: { id: "post-1" } },
+    });
+  });
+
+  it("reports unauthenticated users", async () => {
+    post.mockResolvedValue({
+      error: { detail: "Unauthorized" },
+      response: { status: 401 },
+    });
+    await expect(likePostAction("post-1")).resolves.toEqual({
+      unauthorized: true,
+    });
+  });
+
+  it("returns API errors", async () => {
+    post.mockResolvedValue({
+      error: { detail: "Not found" },
+      response: { status: 404 },
+    });
+    await expect(likePostAction("post-1")).resolves.toEqual({
+      error: "Not found",
     });
   });
 });
