@@ -151,10 +151,10 @@ export interface paths {
             path: { id: string };
             cookie?: never;
         };
-        get?: never;
+        get: operations["get_post_like_api_v1_posts__id__like_get"];
         put?: never;
         post: operations["like_post_api_v1_posts__id__like_post"];
-        delete?: never;
+        delete: operations["unlike_post_api_v1_posts__id__like_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -507,6 +507,22 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["PostResponse"] } };
+            401: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["HTTPValidationError"] } };
+        };
+    };
+    unlike_post_api_v1_posts__id__like_delete: {
+        parameters: { query?: never; header?: never; path: { id: string }; cookie?: never };
+        requestBody?: never;
+        responses: {
+            200: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["PostResponse"] } };
+            401: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["HTTPValidationError"] } };
+        };
+    };
+    get_post_like_api_v1_posts__id__like_get: {
+        parameters: { query?: never; header?: never; path: { id: string }; cookie?: never };
+        requestBody?: never;
+        responses: {
+            200: { headers: { [name: string]: unknown }; content: { "application/json": { post_id: string; like_count: number; liked: boolean } } };
             401: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["HTTPValidationError"] } };
         };
     };

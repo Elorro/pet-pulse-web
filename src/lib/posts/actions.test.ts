@@ -1,19 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { post, revalidatePath, redirect } = vi.hoisted(() => ({
+const { post, get, remove, revalidatePath, redirect } = vi.hoisted(() => ({
   post: vi.fn(),
+  get: vi.fn(),
+  remove: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn(),
 }));
 
-vi.mock("@/lib/api/client", () => ({ api: { POST: post } }));
+vi.mock("@/lib/api/client", () => ({
+  api: { POST: post, GET: get, DELETE: remove },
+}));
 vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("next/navigation", () => ({ redirect }));
 
 import {
   createPostAction,
+  getPostLikeStatusAction,
   likePostAction,
   requestMediaUploadAction,
+  unlikePostAction,
 } from "@/lib/posts/actions";
 
 describe("createPostAction", () => {
@@ -185,5 +191,30 @@ describe("likePostAction", () => {
     await expect(likePostAction("post-1")).resolves.toEqual({
       error: "Not found",
     });
+  });
+});
+
+describe("post like status actions", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returns the viewer's like status", async () => {
+    get.mockResolvedValue({
+      data: { like_count: 3, liked: true },
+      error: undefined,
+      response: { status: 200 },
+    });
+    await expect(getPostLikeStatusAction("post-1")).resolves.toEqual({
+      likeCount: 3,
+      liked: true,
+    });
+  });
+
+  it("removes a like and returns the updated count", async () => {
+    remove.mockResolvedValue({
+      data: { like_count: 2 },
+      error: undefined,
+      response: { status: 200 },
+    });
+    await expect(unlikePostAction("post-1")).resolves.toEqual({ likeCount: 2 });
   });
 });

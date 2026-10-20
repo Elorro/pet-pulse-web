@@ -1,27 +1,36 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { likePostAction, push } = vi.hoisted(() => ({
+const { getPostLikeStatusAction, likePostAction, unlikePostAction, push } = vi.hoisted(() => ({
+  getPostLikeStatusAction: vi.fn(),
   likePostAction: vi.fn(),
+  unlikePostAction: vi.fn(),
   push: vi.fn(),
 }));
 
-vi.mock("@/lib/posts/actions", () => ({ likePostAction }));
+vi.mock("@/lib/posts/actions", () => ({
+  getPostLikeStatusAction,
+  likePostAction,
+  unlikePostAction,
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 import { PostLikeButton } from "@/components/posts/post-like-button";
 
 describe("PostLikeButton", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getPostLikeStatusAction.mockResolvedValue({ likeCount: 2, liked: false });
+  });
 
-  it("sends one like request and uses the API's returned count", async () => {
+  it("toggles the like and uses the API's returned count", async () => {
     let resolveRequest: (value: unknown) => void = () => {};
     likePostAction.mockReturnValue(
       new Promise((resolve) => (resolveRequest = resolve)),
     );
     render(<PostLikeButton postId="post-1" initialCount={2} />);
 
-    const button = screen.getByRole("button", { name: "Like, 2 likes" });
+    const button = await screen.findByRole("button", { name: "Like, 2 likes" });
     fireEvent.click(button);
     fireEvent.click(button);
 
@@ -30,12 +39,15 @@ describe("PostLikeButton", () => {
     resolveRequest({ likeCount: 3 });
 
     await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "Liked, 3 likes" }),
-      ).toBeDisabled(),
+      expect(screen.getByRole("button", { name: "Liked, 3 likes" })).toBeEnabled(),
     );
+    unlikePostAction.mockResolvedValue({ likeCount: 2 });
     fireEvent.click(screen.getByRole("button", { name: "Liked, 3 likes" }));
     expect(likePostAction).toHaveBeenCalledTimes(1);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Like, 2 likes" })).toBeEnabled(),
+    );
+    expect(unlikePostAction).toHaveBeenCalledWith("post-1");
   });
 
   it("sends unauthenticated users to login", async () => {
