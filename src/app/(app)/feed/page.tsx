@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/lib/api/client";
+import { PostLikeButton } from "@/components/posts/post-like-button";
 
 export const metadata: Metadata = { title: "Community feed" };
 
@@ -49,7 +50,9 @@ export default async function FeedPage() {
           <Card key={post.id}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">
-                A Pet Pulse community post
+                <Link className="hover:underline" href={`/post/${post.id}`}>
+                  A Pet Pulse community post
+                </Link>
               </CardTitle>
               <CardDescription>
                 {new Date(post.created_at).toLocaleString()}
@@ -68,6 +71,18 @@ export default async function FeedPage() {
                 </div>
               ) : null}
               <p className="leading-7 whitespace-pre-wrap">{post.content}</p>
+              <div className="mt-3 flex items-center justify-between border-t pt-2">
+                <PostLikeButton
+                  postId={post.id}
+                  initialCount={post.like_count}
+                />
+                <Link
+                  className="text-muted-foreground text-sm hover:underline"
+                  href={`/post/${post.id}`}
+                >
+                  View post
+                </Link>
+              </div>
             </CardContent>
           </Card>
         ))
