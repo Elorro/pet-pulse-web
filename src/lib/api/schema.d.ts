@@ -128,6 +128,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/posts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: { id: string };
+            cookie?: never;
+        };
+        get: operations["get_post_api_v1_posts__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{id}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: { id: string };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["like_post_api_v1_posts__id__like_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     /** TODO: regenerate with pnpm gen:api */
     "/api/v1/posts/media-uploads": {
         parameters: { query?: never; header?: never; path?: never; cookie?: never };
@@ -196,6 +228,7 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            like_count: number;
             /** Media Url */
             media_url: string | null;
         };
@@ -459,6 +492,22 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+        };
+    };
+    get_post_api_v1_posts__id__get: {
+        parameters: { query?: never; header?: never; path: { id: string }; cookie?: never };
+        requestBody?: never;
+        responses: {
+            200: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["PostResponse"] } };
+            404: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["HTTPValidationError"] } };
+        };
+    };
+    like_post_api_v1_posts__id__like_post: {
+        parameters: { query?: never; header?: never; path: { id: string }; cookie?: never };
+        requestBody?: never;
+        responses: {
+            200: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["PostResponse"] } };
+            401: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["HTTPValidationError"] } };
         };
     };
     create_post_api_v1_posts__post: {
