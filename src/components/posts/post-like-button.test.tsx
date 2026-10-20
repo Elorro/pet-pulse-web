@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { post, push } = vi.hoisted(() => ({ post: vi.fn(), push: vi.fn() }));
 
-vi.mock("@/lib/api/client", () => ({ api: { POST: post } }));
+vi.mock("@/lib/api/browser-client", () => ({ api: { POST: post } }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 import { PostLikeButton } from "@/components/posts/post-like-button";
