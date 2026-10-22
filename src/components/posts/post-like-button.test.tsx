@@ -59,7 +59,9 @@ describe("PostLikeButton", () => {
     likePostAction.mockResolvedValue({ unauthorized: true });
     render(<PostLikeButton postId="post-1" initialCount={0} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Like, 0 likes" }));
+    const button = await screen.findByRole("button", { name: "Like, 2 likes" });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/login?next=%2F"));
   });
