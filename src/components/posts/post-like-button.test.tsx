@@ -1,12 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getPostLikeStatusAction, likePostAction, unlikePostAction, push } = vi.hoisted(() => ({
-  getPostLikeStatusAction: vi.fn(),
-  likePostAction: vi.fn(),
-  unlikePostAction: vi.fn(),
-  push: vi.fn(),
-}));
+const { getPostLikeStatusAction, likePostAction, unlikePostAction, push } =
+  vi.hoisted(() => ({
+    getPostLikeStatusAction: vi.fn(),
+    likePostAction: vi.fn(),
+    unlikePostAction: vi.fn(),
+    push: vi.fn(),
+  }));
 
 vi.mock("@/lib/posts/actions", () => ({
   getPostLikeStatusAction,
@@ -39,13 +40,17 @@ describe("PostLikeButton", () => {
     resolveRequest({ likeCount: 3 });
 
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Liked, 3 likes" })).toBeEnabled(),
+      expect(
+        screen.getByRole("button", { name: "Liked, 3 likes" }),
+      ).toBeEnabled(),
     );
     unlikePostAction.mockResolvedValue({ likeCount: 2 });
     fireEvent.click(screen.getByRole("button", { name: "Liked, 3 likes" }));
     expect(likePostAction).toHaveBeenCalledTimes(1);
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Like, 2 likes" })).toBeEnabled(),
+      expect(
+        screen.getByRole("button", { name: "Like, 2 likes" }),
+      ).toBeEnabled(),
     );
     expect(unlikePostAction).toHaveBeenCalledWith("post-1");
   });

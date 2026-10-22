@@ -64,10 +64,9 @@ export type PostLikeStatusResult =
 export async function getPostLikeStatusAction(
   postId: string,
 ): Promise<PostLikeStatusResult> {
-  const { data, error, response } = await api.GET(
-    "/api/v1/posts/{id}/like",
-    { params: { path: { id: postId } } },
-  );
+  const { data, error, response } = await api.GET("/api/v1/posts/{id}/like", {
+    params: { path: { id: postId } },
+  });
 
   if (response.status === 401) return { unauthorized: true };
   if (error || !data) return { error: errorMessage(error) };
@@ -86,7 +85,9 @@ export async function likePostAction(postId: string): Promise<LikePostResult> {
   return { likeCount: data.like_count };
 }
 
-export async function unlikePostAction(postId: string): Promise<LikePostResult> {
+export async function unlikePostAction(
+  postId: string,
+): Promise<LikePostResult> {
   const { data, error, response } = await api.DELETE(
     "/api/v1/posts/{id}/like",
     { params: { path: { id: postId } } },
