@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import {
@@ -10,39 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
 import { PostLikeButton } from "@/components/posts/post-like-button";
+import { PostComments } from "@/components/posts/post-comments";
 import { api } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
-
-async function CommentsAvailability({ postId }: { postId: string }) {
-  const { data: profile } = await api.GET("/api/v1/auth/me");
-  const returnTo = `/post/${postId}`;
-
-  return (
-    <section aria-labelledby="comments-title" className="mt-6">
-      <Card>
-        <CardHeader>
-          <CardTitle id="comments-title">Comments</CardTitle>
-          <CardDescription>
-            Comments are not available yet because the API does not provide
-            comment data or publishing support.
-          </CardDescription>
-        </CardHeader>
-        {!profile ? (
-          <CardContent>
-            <Link
-              className={buttonVariants({ size: "sm" })}
-              href={`/login?next=${encodeURIComponent(returnTo)}`}
-            >
-              Sign in to comment
-            </Link>
-          </CardContent>
-        ) : null}
-      </Card>
-    </section>
-  );
-}
+import type { PostComment } from "@/lib/posts/actions";
 
 type PostPageProps = { params: Promise<{ id: string }> };
 
@@ -84,6 +55,26 @@ export default async function PublicPostPage({ params }: PostPageProps) {
     );
   }
 
+  let comments: PostComment[] = [];
+  let commentsError: string | undefined;
+  let isAuthenticated = false;
+  try {
+    const [commentsResult, profileResult] = await Promise.all([
+      api.GET("/api/v1/posts/{post_id}/comments", {
+        params: { path: { post_id: id } },
+      }),
+      api.GET("/api/v1/auth/me"),
+    ]);
+    if (commentsResult.error || !commentsResult.data) {
+      commentsError = errorMessage(commentsResult.error);
+    } else {
+      comments = commentsResult.data;
+    }
+    isAuthenticated = Boolean(profileResult.data);
+  } catch {
+    commentsError = "We could not load comments. Please try again.";
+  }
+
   return (
     <main className="mx-auto max-w-3xl px-5 pt-12 pb-20 sm:px-8">
       <Card>
@@ -114,7 +105,12 @@ export default async function PublicPostPage({ params }: PostPageProps) {
           </div>
         </CardContent>
       </Card>
-      <CommentsAvailability postId={post.id} />
+      <PostComments
+        initialComments={comments}
+        isAuthenticated={isAuthenticated}
+        loadError={commentsError}
+        postId={post.id}
+      />
     </main>
   );
 }

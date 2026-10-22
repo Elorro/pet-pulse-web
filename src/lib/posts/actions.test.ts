@@ -16,6 +16,7 @@ vi.mock("next/navigation", () => ({ redirect }));
 
 import {
   createPostAction,
+  createPostCommentAction,
   getPostLikeStatusAction,
   likePostAction,
   requestMediaUploadAction,
@@ -216,5 +217,71 @@ describe("post like status actions", () => {
       response: { status: 200 },
     });
     await expect(unlikePostAction("post-1")).resolves.toEqual({ likeCount: 2 });
+  });
+});
+
+describe("createPostCommentAction", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("posts trimmed content using the post_id route parameter", async () => {
+    const comment = {
+      id: "comment-1",
+      post_id: "post-1",
+      content: "Hello!",
+      media: null,
+      created_at: "2026-10-22T12:00:00Z",
+      author: { id: "user-1", username: "luis" },
+    };
+    post.mockResolvedValue({
+      data: comment,
+      error: undefined,
+      response: { status: 201 },
+    });
+    const formData = new FormData();
+    formData.set("content", "  Hello!  ");
+
+    await expect(
+      createPostCommentAction("post-1", {}, formData),
+    ).resolves.toEqual({ comment });
+    expect(post).toHaveBeenCalledWith("/api/v1/posts/{post_id}/comments", {
+      params: { path: { post_id: "post-1" } },
+      body: { content: "Hello!" },
+    });
+    expect(revalidatePath).toHaveBeenCalledWith("/post/post-1");
+  });
+
+  it("rejects empty content without calling the API", async () => {
+    const formData = new FormData();
+    formData.set("content", "  ");
+    await expect(
+      createPostCommentAction("post-1", {}, formData),
+    ).resolves.toEqual({
+      error: "Write something before commenting.",
+    });
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it("returns unauthorized and API errors without redirecting away", async () => {
+    const formData = new FormData();
+    formData.set("content", "Hello");
+    post.mockResolvedValueOnce({
+      error: { detail: "Unauthorized" },
+      response: { status: 401 },
+    });
+    await expect(
+      createPostCommentAction("post-1", {}, formData),
+    ).resolves.toEqual({
+      unauthorized: true,
+    });
+
+    post.mockResolvedValueOnce({
+      error: { detail: "Post not found" },
+      response: { status: 404 },
+    });
+    await expect(
+      createPostCommentAction("post-1", {}, formData),
+    ).resolves.toEqual({
+      error: "Post not found",
+    });
   });
 });

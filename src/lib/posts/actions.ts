@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { api } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
+import type { components } from "@/lib/api/schema";
 
 export type ImageContentType =
   "image/jpeg" | "image/png" | "image/webp" | "image/gif";
@@ -13,6 +14,12 @@ export type MediaUploadResult =
   { path: string; uploadUrl: string } | { error: string };
 
 export type PostActionState = { error?: string };
+export type PostComment = components["schemas"]["CommentResponse"];
+export type PostCommentActionState = {
+  comment?: PostComment;
+  error?: string;
+  unauthorized?: boolean;
+};
 
 function value(formData: FormData, name: string) {
   const field = formData.get(name);
@@ -97,4 +104,28 @@ export async function unlikePostAction(
   if (error || !data) return { error: errorMessage(error) };
 
   return { likeCount: data.like_count };
+}
+
+export async function createPostCommentAction(
+  postId: string,
+  _previous: PostCommentActionState,
+  formData: FormData,
+): Promise<PostCommentActionState> {
+  const content = value(formData, "content").trim();
+  if (!content) return { error: "Write something before commenting." };
+
+  try {
+    const { data, error, response } = await api.POST(
+      "/api/v1/posts/{post_id}/comments",
+      { params: { path: { post_id: postId } }, body: { content } },
+    );
+
+    if (response.status === 401) return { unauthorized: true };
+    if (error || !data) return { error: errorMessage(error) };
+
+    revalidatePath(`/post/${postId}`);
+    return { comment: data };
+  } catch {
+    return { error: "We could not post your comment. Please try again." };
+  }
 }
