@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import {
@@ -10,41 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
 import { PostLikeButton } from "@/components/posts/post-like-button";
 import { PostComments } from "@/components/posts/post-comments";
 import { api } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 import type { PostComment } from "@/lib/posts/actions";
-
-async function CommentsAvailability({ postId }: { postId: string }) {
-  const { data: profile } = await api.GET("/api/v1/auth/me");
-  const returnTo = `/post/${postId}`;
-
-  return (
-    <section aria-labelledby="comments-title" className="mt-6">
-      <Card>
-        <CardHeader>
-          <CardTitle id="comments-title">Comments</CardTitle>
-          <CardDescription>
-            Comments are not available yet because the API does not provide
-            comment data or publishing support.
-          </CardDescription>
-        </CardHeader>
-        {!profile ? (
-          <CardContent>
-            <Link
-              className={buttonVariants({ size: "sm" })}
-              href={`/login?next=${encodeURIComponent(returnTo)}`}
-            >
-              Sign in to comment
-            </Link>
-          </CardContent>
-        ) : null}
-      </Card>
-    </section>
-  );
-}
 
 type PostPageProps = { params: Promise<{ id: string }> };
 
@@ -67,8 +36,8 @@ export default async function PublicPostPage({ params }: PostPageProps) {
     data: post,
     error,
     response,
-  } = await api.GET("/api/v1/posts/{id}", {
-    params: { path: { id } },
+  } = await api.GET("/api/v1/posts/{post_id}", {
+    params: { path: { post_id: id } },
   });
   if (response.status === 401)
     redirect(`/login?next=${encodeURIComponent(`/post/${id}`)}`);

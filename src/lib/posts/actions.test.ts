@@ -20,6 +20,7 @@ import {
   getPostLikeStatusAction,
   likePostAction,
   requestMediaUploadAction,
+  requestCommentMediaUploadAction,
   unlikePostAction,
 } from "@/lib/posts/actions";
 
@@ -157,6 +158,48 @@ describe("requestMediaUploadAction", () => {
   });
 });
 
+describe("requestCommentMediaUploadAction", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("sends the MIME type and file size and maps the signed upload", async () => {
+    post.mockResolvedValue({
+      data: {
+        path: "user-1/comment.gif",
+        upload_url: "https://storage.test/comment-upload",
+      },
+      error: undefined,
+      response: { status: 201 },
+    });
+    await expect(
+      requestCommentMediaUploadAction("image/gif", 4096),
+    ).resolves.toEqual({
+      path: "user-1/comment.gif",
+      uploadUrl: "https://storage.test/comment-upload",
+    });
+    expect(post).toHaveBeenCalledWith("/api/v1/posts/comment-media-uploads", {
+      body: { content_type: "image/gif", file_size_bytes: 4096 },
+    });
+  });
+
+  it("returns auth and API errors", async () => {
+    post.mockResolvedValueOnce({
+      error: { detail: "Unauthorized" },
+      response: { status: 401 },
+    });
+    await expect(
+      requestCommentMediaUploadAction("image/png", 100),
+    ).resolves.toEqual({ unauthorized: true });
+
+    post.mockResolvedValueOnce({
+      error: { detail: "File is too large" },
+      response: { status: 422 },
+    });
+    await expect(
+      requestCommentMediaUploadAction("image/png", 100),
+    ).resolves.toEqual({ error: "File is too large" });
+  });
+});
+
 describe("likePostAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -169,8 +212,8 @@ describe("likePostAction", () => {
       response: { status: 200 },
     });
     await expect(likePostAction("post-1")).resolves.toEqual({ likeCount: 3 });
-    expect(post).toHaveBeenCalledWith("/api/v1/posts/{id}/like", {
-      params: { path: { id: "post-1" } },
+    expect(post).toHaveBeenCalledWith("/api/v1/posts/{post_id}/like", {
+      params: { path: { post_id: "post-1" } },
     });
   });
 
@@ -228,7 +271,7 @@ describe("createPostCommentAction", () => {
       id: "comment-1",
       post_id: "post-1",
       content: "Hello!",
-      media: null,
+      media_url: null,
       created_at: "2026-10-22T12:00:00Z",
       author: { id: "user-1", username: "luis" },
     };
@@ -256,9 +299,36 @@ describe("createPostCommentAction", () => {
     await expect(
       createPostCommentAction("post-1", {}, formData),
     ).resolves.toEqual({
-      error: "Write something before commenting.",
+      error: "Write something or attach an image before commenting.",
     });
     expect(post).not.toHaveBeenCalled();
+  });
+
+  it("allows a media-only comment and sends its uploaded path", async () => {
+    const comment = {
+      id: "comment-2",
+      post_id: "post-1",
+      content: "",
+      media_url: "https://storage.test/comment.gif",
+      created_at: "2026-10-22T12:00:00Z",
+      author: { id: "user-1", username: "luis" },
+    };
+    post.mockResolvedValue({
+      data: comment,
+      error: undefined,
+      response: { status: 201 },
+    });
+    const formData = new FormData();
+    formData.set("content", "  ");
+    formData.set("media_path", "user-1/comment.gif");
+
+    await expect(
+      createPostCommentAction("post-1", {}, formData),
+    ).resolves.toEqual({ comment });
+    expect(post).toHaveBeenCalledWith("/api/v1/posts/{post_id}/comments", {
+      params: { path: { post_id: "post-1" } },
+      body: { content: "", media_path: "user-1/comment.gif" },
+    });
   });
 
   it("returns unauthorized and API errors without redirecting away", async () => {

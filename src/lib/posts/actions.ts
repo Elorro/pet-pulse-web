@@ -12,6 +12,10 @@ export type ImageContentType =
 
 export type MediaUploadResult =
   { path: string; uploadUrl: string } | { error: string };
+export type CommentMediaUploadResult =
+  | { path: string; uploadUrl: string }
+  | { error: string }
+  | { unauthorized: true };
 
 export type PostActionState = { error?: string };
 export type PostComment = components["schemas"]["CommentResponse"];
@@ -61,6 +65,23 @@ export async function requestMediaUploadAction(
   return { path: data.path, uploadUrl: data.upload_url };
 }
 
+export async function requestCommentMediaUploadAction(
+  contentType: ImageContentType,
+  fileSizeBytes: number,
+): Promise<CommentMediaUploadResult> {
+  const { data, error, response } = await api.POST(
+    "/api/v1/posts/comment-media-uploads",
+    {
+      body: { content_type: contentType, file_size_bytes: fileSizeBytes },
+    },
+  );
+
+  if (response.status === 401) return { unauthorized: true };
+  if (error || !data) return { error: errorMessage(error) };
+
+  return { path: data.path, uploadUrl: data.upload_url };
+}
+
 export type LikePostResult =
   { likeCount: number } | { unauthorized: true } | { error: string };
 export type PostLikeStatusResult =
@@ -71,9 +92,12 @@ export type PostLikeStatusResult =
 export async function getPostLikeStatusAction(
   postId: string,
 ): Promise<PostLikeStatusResult> {
-  const { data, error, response } = await api.GET("/api/v1/posts/{id}/like", {
-    params: { path: { id: postId } },
-  });
+  const { data, error, response } = await api.GET(
+    "/api/v1/posts/{post_id}/like",
+    {
+      params: { path: { post_id: postId } },
+    },
+  );
 
   if (response.status === 401) return { unauthorized: true };
   if (error || !data) return { error: errorMessage(error) };
@@ -82,9 +106,10 @@ export async function getPostLikeStatusAction(
 }
 
 export async function likePostAction(postId: string): Promise<LikePostResult> {
-  const { data, error, response } = await api.POST("/api/v1/posts/{id}/like", {
-    params: { path: { id: postId } },
-  });
+  const { data, error, response } = await api.POST(
+    "/api/v1/posts/{post_id}/like",
+    { params: { path: { post_id: postId } } },
+  );
 
   if (response.status === 401) return { unauthorized: true };
   if (error || !data) return { error: errorMessage(error) };
@@ -96,8 +121,8 @@ export async function unlikePostAction(
   postId: string,
 ): Promise<LikePostResult> {
   const { data, error, response } = await api.DELETE(
-    "/api/v1/posts/{id}/like",
-    { params: { path: { id: postId } } },
+    "/api/v1/posts/{post_id}/like",
+    { params: { path: { post_id: postId } } },
   );
 
   if (response.status === 401) return { unauthorized: true };
@@ -112,12 +137,19 @@ export async function createPostCommentAction(
   formData: FormData,
 ): Promise<PostCommentActionState> {
   const content = value(formData, "content").trim();
-  if (!content) return { error: "Write something before commenting." };
+  const mediaPath = value(formData, "media_path");
+  if (!content && !mediaPath)
+    return { error: "Write something or attach an image before commenting." };
+  if (content.length > 5000)
+    return { error: "Comments must be 5000 characters or fewer." };
 
   try {
     const { data, error, response } = await api.POST(
       "/api/v1/posts/{post_id}/comments",
-      { params: { path: { post_id: postId } }, body: { content } },
+      {
+        params: { path: { post_id: postId } },
+        body: { content, ...(mediaPath ? { media_path: mediaPath } : {}) },
+      },
     );
 
     if (response.status === 401) return { unauthorized: true };
