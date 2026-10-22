@@ -65,6 +65,36 @@ describe("PostComments", () => {
     );
   });
 
+  it("shows a distinct publish error from the comment-list load error", async () => {
+    createPostCommentAction.mockResolvedValue({
+      error: "The comment could not be posted (HTTP 500).",
+    });
+    render(
+      <PostComments
+        initialComments={[]}
+        isAuthenticated
+        loadError="Comments could not be loaded (HTTP 500)."
+        postId="post-1"
+      />,
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Your comment" }), {
+      target: { value: "Hello" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Post comment" }));
+
+    expect(
+      await screen.findByText(
+        "Comment could not be posted: The comment could not be posted (HTTP 500).",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Comments could not be loaded: Comments could not be loaded (HTTP 500).",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("preserves the post path for sign-in and retries failed loads", () => {
     const { rerender } = render(
       <PostComments

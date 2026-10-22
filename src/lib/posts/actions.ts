@@ -71,9 +71,10 @@ export type PostLikeStatusResult =
 export async function getPostLikeStatusAction(
   postId: string,
 ): Promise<PostLikeStatusResult> {
-  const { data, error, response } = await api.GET("/api/v1/posts/{id}/like", {
-    params: { path: { id: postId } },
-  });
+  const { data, error, response } = await api.GET(
+    "/api/v1/posts/{post_id}/like",
+    { params: { path: { post_id: postId } } },
+  );
 
   if (response.status === 401) return { unauthorized: true };
   if (error || !data) return { error: errorMessage(error) };
@@ -82,9 +83,10 @@ export async function getPostLikeStatusAction(
 }
 
 export async function likePostAction(postId: string): Promise<LikePostResult> {
-  const { data, error, response } = await api.POST("/api/v1/posts/{id}/like", {
-    params: { path: { id: postId } },
-  });
+  const { data, error, response } = await api.POST(
+    "/api/v1/posts/{post_id}/like",
+    { params: { path: { post_id: postId } } },
+  );
 
   if (response.status === 401) return { unauthorized: true };
   if (error || !data) return { error: errorMessage(error) };
@@ -96,8 +98,8 @@ export async function unlikePostAction(
   postId: string,
 ): Promise<LikePostResult> {
   const { data, error, response } = await api.DELETE(
-    "/api/v1/posts/{id}/like",
-    { params: { path: { id: postId } } },
+    "/api/v1/posts/{post_id}/like",
+    { params: { path: { post_id: postId } } },
   );
 
   if (response.status === 401) return { unauthorized: true };
@@ -121,11 +123,20 @@ export async function createPostCommentAction(
     );
 
     if (response.status === 401) return { unauthorized: true };
-    if (error || !data) return { error: errorMessage(error) };
+    if (error || !data)
+      return {
+        error:
+          errorMessage(error) ===
+          "We could not complete that request. Please try again."
+            ? `The comment could not be posted (HTTP ${response.status}).`
+            : errorMessage(error),
+      };
 
     revalidatePath(`/post/${postId}`);
     return { comment: data };
   } catch {
-    return { error: "We could not post your comment. Please try again." };
+    return {
+      error: "Could not reach the API to post your comment. Please try again.",
+    };
   }
 }

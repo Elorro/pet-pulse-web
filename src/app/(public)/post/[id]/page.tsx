@@ -67,8 +67,8 @@ export default async function PublicPostPage({ params }: PostPageProps) {
     data: post,
     error,
     response,
-  } = await api.GET("/api/v1/posts/{id}", {
-    params: { path: { id } },
+  } = await api.GET("/api/v1/posts/{post_id}", {
+    params: { path: { post_id: id } },
   });
   if (response.status === 401)
     redirect(`/login?next=${encodeURIComponent(`/post/${id}`)}`);
@@ -89,22 +89,29 @@ export default async function PublicPostPage({ params }: PostPageProps) {
   let comments: PostComment[] = [];
   let commentsError: string | undefined;
   let isAuthenticated = false;
-  try {
-    const [commentsResult, profileResult] = await Promise.all([
-      api.GET("/api/v1/posts/{post_id}/comments", {
-        params: { path: { post_id: id } },
-      }),
-      api.GET("/api/v1/auth/me"),
-    ]);
+  const [commentsOutcome, profileOutcome] = await Promise.allSettled([
+    api.GET("/api/v1/posts/{post_id}/comments", {
+      params: { path: { post_id: id } },
+    }),
+    api.GET("/api/v1/auth/me"),
+  ]);
+  if (commentsOutcome.status === "rejected") {
+    commentsError =
+      "Could not reach the API to load comments. Please try again.";
+  } else {
+    const commentsResult = commentsOutcome.value;
     if (commentsResult.error || !commentsResult.data) {
-      commentsError = errorMessage(commentsResult.error);
+      const message = errorMessage(commentsResult.error);
+      commentsError =
+        message === "We could not complete that request. Please try again."
+          ? `Comments could not be loaded (HTTP ${commentsResult.response.status}).`
+          : message;
     } else {
       comments = commentsResult.data;
     }
-    isAuthenticated = Boolean(profileResult.data);
-  } catch {
-    commentsError = "We could not load comments. Please try again.";
   }
+  isAuthenticated =
+    profileOutcome.status === "fulfilled" && Boolean(profileOutcome.value.data);
 
   return (
     <main className="mx-auto max-w-3xl px-5 pt-12 pb-20 sm:px-8">

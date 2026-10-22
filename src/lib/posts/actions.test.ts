@@ -169,8 +169,8 @@ describe("likePostAction", () => {
       response: { status: 200 },
     });
     await expect(likePostAction("post-1")).resolves.toEqual({ likeCount: 3 });
-    expect(post).toHaveBeenCalledWith("/api/v1/posts/{id}/like", {
-      params: { path: { id: "post-1" } },
+    expect(post).toHaveBeenCalledWith("/api/v1/posts/{post_id}/like", {
+      params: { path: { post_id: "post-1" } },
     });
   });
 
@@ -282,6 +282,22 @@ describe("createPostCommentAction", () => {
       createPostCommentAction("post-1", {}, formData),
     ).resolves.toEqual({
       error: "Post not found",
+    });
+  });
+
+  it("includes the HTTP status when the API provides no readable error body", async () => {
+    const formData = new FormData();
+    formData.set("content", "Hello");
+    post.mockResolvedValueOnce({
+      response: { status: 500 },
+      error: undefined,
+      data: undefined,
+    });
+
+    await expect(
+      createPostCommentAction("post-1", {}, formData),
+    ).resolves.toEqual({
+      error: "The comment could not be posted (HTTP 500).",
     });
   });
 });

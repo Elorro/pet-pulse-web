@@ -82,7 +82,7 @@ export function PostComments({
               />
               {state.error ? (
                 <p aria-live="polite" className="text-destructive text-sm">
-                  {state.error}
+                  Comment could not be posted: {state.error}
                 </p>
               ) : null}
               <Button
@@ -110,7 +110,9 @@ export function PostComments({
           <div aria-live="polite" className="grid gap-4">
             {loadError ? (
               <div className="border-destructive/30 bg-destructive/5 rounded-lg border p-4">
-                <p className="text-destructive text-sm">{loadError}</p>
+                <p className="text-destructive text-sm">
+                  Comments could not be loaded: {loadError}
+                </p>
                 <Button
                   className="mt-3"
                   onClick={() => router.refresh()}
