@@ -160,6 +160,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/posts/{post_id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: { post_id: string };
+            cookie?: never;
+        };
+        /** List comments for a post */
+        get: operations["list_post_comments_api_v1_posts__post_id__comments_get"];
+        put?: never;
+        /** Create a comment on a post */
+        post: operations["create_post_comment_api_v1_posts__post_id__comments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     /** TODO: regenerate with pnpm gen:api */
     "/api/v1/posts/media-uploads": {
         parameters: { query?: never; header?: never; path?: never; cookie?: never };
@@ -200,6 +218,29 @@ export interface components {
             content: string;
             /** Media Path */
             media_path?: string | null;
+        };
+        /** CommentCreate */
+        CommentCreate: {
+            /** Content */
+            content: string;
+        };
+        /** CommentResponse */
+        CommentResponse: {
+            /** Id */
+            id: string;
+            /** Post Id */
+            post_id: string;
+            /** Content */
+            content: string | null;
+            /** Media */
+            media: unknown | null;
+            /** Created At */
+            created_at: string;
+            /** Author */
+            author: {
+                id: string;
+                username: string;
+            };
         };
         /**
          * PostResponse
@@ -524,6 +565,23 @@ export interface operations {
         responses: {
             200: { headers: { [name: string]: unknown }; content: { "application/json": { post_id: string; like_count: number; liked: boolean } } };
             401: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["HTTPValidationError"] } };
+        };
+    };
+    list_post_comments_api_v1_posts__post_id__comments_get: {
+        parameters: { query?: never; header?: never; path: { post_id: string }; cookie?: never };
+        requestBody?: never;
+        responses: {
+            200: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["CommentResponse"][] } };
+            404: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["HTTPValidationError"] } };
+        };
+    };
+    create_post_comment_api_v1_posts__post_id__comments_post: {
+        parameters: { query?: never; header?: never; path: { post_id: string }; cookie?: never };
+        requestBody: { content: { "application/json": components["schemas"]["CommentCreate"] } };
+        responses: {
+            201: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["CommentResponse"] } };
+            401: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["HTTPValidationError"] } };
+            404: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["HTTPValidationError"] } };
         };
     };
     create_post_api_v1_posts__post: {
