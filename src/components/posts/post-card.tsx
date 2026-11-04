@@ -74,10 +74,10 @@ export function PostCard({ post }: PostCardProps) {
                   title="Comment"
                 />
               }
-              size="icon-lg"
+              size="icon-sm"
               variant="ghost"
             >
-              <MessageCircle aria-hidden="true" className="size-5" />
+              <MessageCircle aria-hidden="true" />
             </Button>
           </div>
           <div className="flex items-center gap-3">
