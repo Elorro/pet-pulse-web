@@ -43,7 +43,9 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
       <main className="mx-auto max-w-4xl px-5 pt-12 pb-20 sm:px-8">
         <Card>
           <CardHeader>
-            <CardTitle>Profile unavailable</CardTitle>
+            <h1 className="text-base leading-snug font-medium">
+              Profile unavailable
+            </h1>
             <CardDescription>{errorMessage(postsResult.error)}</CardDescription>
           </CardHeader>
           <CardContent>

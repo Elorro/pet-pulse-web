@@ -1,25 +1,67 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
+const { getProfile, routerPush } = vi.hoisted(() => ({
+  getProfile: vi.fn(),
+  routerPush: vi.fn(),
+}));
 
 vi.mock("@/lib/api/client", () => ({
   api: { GET: getProfile },
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: routerPush }),
+}));
+
 import PublicProfilePage from "./page";
+
+const postFor = (username: string, photoUrl: string | null = null) => ({
+  id: "post-1",
+  author_id: "user-1",
+  content: `${username}'s post`,
+  created_at: "2026-01-01T00:00:00Z",
+  updated_at: "2026-01-01T00:00:00Z",
+  media_url: null,
+  like_count: 2,
+  author: {
+    id: "user-1",
+    username,
+    full_name: null,
+    photo_url: photoUrl,
+  },
+});
+
+const signedInProfile = {
+  id: "user-1",
+  username: "luna",
+  email: "luna@example.test",
+  created_at: "2026-01-01T00:00:00Z",
+  avatar_url: "https://images.test/luna.png",
+};
+
+function mockProfileRequests({
+  postsResult,
+  profile = signedInProfile,
+}: {
+  postsResult: { data?: unknown; error?: unknown };
+  profile?: typeof signedInProfile | null;
+}) {
+  getProfile.mockImplementation((path: string) => {
+    if (path === "/api/v1/posts/by-username/{username}") {
+      return Promise.resolve(postsResult);
+    }
+    return Promise.resolve({ data: profile });
+  });
+}
 
 describe("PublicProfilePage", () => {
   beforeEach(() => getProfile.mockReset());
 
-  it("shows the signed-in user's name and optional profile photo", async () => {
-    getProfile.mockResolvedValue({
-      data: {
-        id: "user-1",
-        username: "luna",
-        email: "luna@example.test",
-        created_at: "2026-01-01T00:00:00Z",
-        avatar_url: "https://images.test/luna.png",
+  it("shows the requested profile and its posts with the author's photo", async () => {
+    mockProfileRequests({
+      postsResult: {
+        data: [postFor("luna", "https://images.test/luna.png")],
       },
     });
 
@@ -30,21 +72,26 @@ describe("PublicProfilePage", () => {
     );
 
     expect(screen.getByRole("heading", { name: "luna" })).toBeInTheDocument();
+    expect(screen.getByText("luna's post")).toBeInTheDocument();
     expect(screen.getByAltText("luna's profile photo")).toHaveAttribute(
       "src",
       "https://images.test/luna.png",
     );
-    expect(getProfile).toHaveBeenCalledWith("/api/v1/auth/me");
+    expect(getProfile).toHaveBeenCalledWith(
+      "/api/v1/posts/by-username/{username}",
+      {
+        params: {
+          path: { username: "luna" },
+          query: { limit: 20, offset: 0 },
+        },
+      },
+    );
   });
 
-  it("shows a generated avatar fallback when there is no photo", async () => {
-    getProfile.mockResolvedValue({
-      data: {
-        id: "user-1",
-        username: "luna",
-        email: null,
-        created_at: "2026-01-01T00:00:00Z",
-      },
+  it("shows an avatar fallback when the profile has no photo", async () => {
+    mockProfileRequests({
+      postsResult: { data: [postFor("luna")] },
+      profile: null,
     });
 
     render(
@@ -62,15 +109,9 @@ describe("PublicProfilePage", () => {
     ).toBeInTheDocument();
   });
 
-  it("does not show the authenticated user's data on another username route", async () => {
-    getProfile.mockResolvedValue({
-      data: {
-        id: "user-1",
-        username: "luna",
-        email: null,
-        created_at: "2026-01-01T00:00:00Z",
-        avatar_url: "https://images.test/luna.png",
-      },
+  it("shows only the posts returned for the username in the route", async () => {
+    mockProfileRequests({
+      postsResult: { data: [postFor("someone-else")] },
     });
 
     render(
@@ -83,12 +124,30 @@ describe("PublicProfilePage", () => {
       screen.queryByRole("heading", { name: "luna" }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText("This public profile page is ready for profile data."),
+      screen.getByRole("heading", { name: "someone-else" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("someone-else's post")).toBeInTheDocument();
+  });
+
+  it("shows an empty state when the profile has no posts", async () => {
+    mockProfileRequests({ postsResult: { data: [] } });
+
+    render(
+      await PublicProfilePage({
+        params: Promise.resolve({ username: "luna" }),
+      }),
+    );
+
+    expect(screen.getByText("No publications yet")).toBeInTheDocument();
+    expect(
+      screen.getByText("@luna has not shared any posts yet."),
     ).toBeInTheDocument();
   });
 
-  it("shows an error state when the profile request fails", async () => {
-    getProfile.mockResolvedValue({ error: { detail: "Service unavailable" } });
+  it("shows an error state when the profile posts request fails", async () => {
+    mockProfileRequests({
+      postsResult: { error: { detail: "Service unavailable" } },
+    });
 
     render(
       await PublicProfilePage({
