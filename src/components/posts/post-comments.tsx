@@ -57,7 +57,7 @@ export function PostComments({
   const [content, setContent] = useState("");
   const [state, setState] = useState<PostCommentActionState>({});
   const [pending, startAction] = useTransition();
-  const returnTo = `/post/${postId}`;
+  const returnTo = `/post/${postId}#comment-content`;
   const comments = useMemo(() => {
     if (
       !state.comment ||
@@ -72,6 +72,12 @@ export function PostComments({
     if (state.unauthorized)
       router.push(`/login?next=${encodeURIComponent(returnTo)}`);
   }, [returnTo, router, state]);
+
+  useEffect(() => {
+    if (window.location.hash === "#comment-content") {
+      document.getElementById("comment-content")?.focus();
+    }
+  }, []);
 
   useEffect(
     () => () => {
