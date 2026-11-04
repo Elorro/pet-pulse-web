@@ -65,6 +65,21 @@ describe("PostComments", () => {
     ).toBeInTheDocument();
   });
 
+  it("focuses the comment field when opened from a post card", () => {
+    window.location.hash = "#comment-content";
+    render(
+      <PostComments
+        initialComments={[comment]}
+        isAuthenticated
+        postId="post-1"
+      />,
+    );
+
+    expect(screen.getByRole("textbox", { name: "Your comment" })).toHaveFocus();
+    expect(screen.getByText("Hello from the community")).toBeInTheDocument();
+    window.history.replaceState(null, "", window.location.pathname);
+  });
+
   it("publishes and displays the returned comment", async () => {
     createPostCommentAction.mockResolvedValue({ comment });
     render(
@@ -191,7 +206,7 @@ describe("PostComments", () => {
     );
     expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute(
       "href",
-      "/login?next=%2Fpost%2Fpost-1",
+      "/login?next=%2Fpost%2Fpost-1%23comment-content",
     );
 
     rerender(

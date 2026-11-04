@@ -63,12 +63,20 @@ export function PostCard({ post }: PostCardProps) {
             postId={post.id}
             initialCount={post.like_count ?? 0}
           />
-          <Link
-            className="text-muted-foreground text-sm hover:underline"
-            href={`/post/${post.id}`}
-          >
-            View post and comments
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              className="text-primary text-sm font-medium hover:underline"
+              href={`/post/${post.id}#comment-content`}
+            >
+              Comment
+            </Link>
+            <Link
+              className="text-muted-foreground text-sm hover:underline"
+              href={`/post/${post.id}`}
+            >
+              View post and comments
+            </Link>
+          </div>
         </div>
       </CardContent>
     </Card>
