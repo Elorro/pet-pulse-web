@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -10,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/lib/api/client";
-import { PostLikeButton } from "@/components/posts/post-like-button";
+import { PostCard } from "@/components/posts/post-card";
 
 export const metadata: Metadata = { title: "Community feed" };
 
@@ -46,46 +45,7 @@ export default async function FeedPage() {
           </CardContent>
         </Card>
       ) : posts?.length ? (
-        posts.map((post) => (
-          <Card key={post.id}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">
-                <Link className="hover:underline" href={`/post/${post.id}`}>
-                  A Pet Pulse community post
-                </Link>
-              </CardTitle>
-              <CardDescription>
-                {new Date(post.created_at).toLocaleString()}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {post.media_url ? (
-                <div className="relative mb-4 aspect-video overflow-hidden rounded-lg">
-                  <Image
-                    alt="Photo shared with the post"
-                    className="object-cover"
-                    fill
-                    sizes="(max-width: 672px) 100vw, 672px"
-                    src={post.media_url}
-                  />
-                </div>
-              ) : null}
-              <p className="leading-7 whitespace-pre-wrap">{post.content}</p>
-              <div className="mt-3 flex items-center justify-between border-t pt-2">
-                <PostLikeButton
-                  postId={post.id}
-                  initialCount={post.like_count}
-                />
-                <Link
-                  className="text-muted-foreground text-sm hover:underline"
-                  href={`/post/${post.id}`}
-                >
-                  View post
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        ))
+        posts.map((post) => <PostCard key={post.id} post={post} />)
       ) : (
         <Card>
           <CardHeader>
