@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 
 import {
   Card,
@@ -8,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { PostLikeButton } from "@/components/posts/post-like-button";
 
 type PostCardProps = {
@@ -59,17 +61,26 @@ export function PostCard({ post }: PostCardProps) {
         ) : null}
         <p className="leading-7 whitespace-pre-wrap">{post.content}</p>
         <div className="mt-3 flex items-center justify-between border-t pt-2">
-          <PostLikeButton
-            postId={post.id}
-            initialCount={post.like_count ?? 0}
-          />
-          <div className="flex items-center gap-3">
-            <Link
-              className="text-primary text-sm font-medium hover:underline"
-              href={`/post/${post.id}#comment-content`}
+          <div className="flex items-center gap-1">
+            <PostLikeButton
+              postId={post.id}
+              initialCount={post.like_count ?? 0}
+            />
+            <Button
+              aria-label="Comment"
+              render={
+                <Link
+                  href={`/post/${post.id}#comment-content`}
+                  title="Comment"
+                />
+              }
+              size="icon-lg"
+              variant="ghost"
             >
-              Comment
-            </Link>
+              <MessageCircle aria-hidden="true" className="size-5" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-3">
             <Link
               className="text-muted-foreground text-sm hover:underline"
               href={`/post/${post.id}`}
