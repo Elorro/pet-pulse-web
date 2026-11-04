@@ -27,7 +27,7 @@ export function UserMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Open user menu"
-        className="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full border border-transparent bg-clip-padding pr-3 pl-1.5 text-sm font-medium whitespace-nowrap outline-none transition-all focus-visible:ring-3"
+        className="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full border border-transparent bg-clip-padding pr-3 pl-1.5 text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-3"
       >
         <Avatar className="size-8">
           <AvatarFallback seed={userId}>{initials}</AvatarFallback>
