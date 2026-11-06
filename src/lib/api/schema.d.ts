@@ -101,7 +101,11 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Actualizar el perfil del usuario autenticado
+         * @description Actualiza parcialmente username, full_name y photo_url. La foto debe cargarse mediante el flujo de URLs firmadas de /api/v1/posts/media-uploads y luego enviarse como URL pública. id, email y created_at no son editables.
+         */
+        patch: operations["update_me_api_v1_auth_me_patch"];
         trace?: never;
     };
     "/api/v1/posts/media-uploads": {
@@ -279,6 +283,16 @@ export interface components {
             /** File Size Bytes */
             file_size_bytes: number;
         };
+        /**
+         * CommentMediaUploadResponse
+         * @description Respuesta existente para cargas de adjuntos de comentarios.
+         */
+        CommentMediaUploadResponse: {
+            /** Path */
+            path: string;
+            /** Upload Url */
+            upload_url: string;
+        };
         /** CommentResponse */
         CommentResponse: {
             /**
@@ -348,13 +362,15 @@ export interface components {
         };
         /**
          * MediaUploadResponse
-         * @description Ruta de almacenamiento y URL temporal para la carga directa.
+         * @description Ruta, URL temporal de carga y URL pública del objeto.
          */
         MediaUploadResponse: {
             /** Path */
             path: string;
             /** Upload Url */
             upload_url: string;
+            /** Public Url */
+            public_url: string;
         };
         /**
          * PostAuthorResponse
@@ -474,6 +490,18 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /**
+         * ProfileUpdateRequest
+         * @description Campos editables del perfil; los omitidos conservan su valor actual.
+         */
+        ProfileUpdateRequest: {
+            /** Username */
+            username?: string | null;
+            /** Full Name */
+            full_name?: string | null;
+            /** Photo Url */
+            photo_url?: string | null;
         };
         /** RefreshRequest */
         RefreshRequest: {
@@ -685,6 +713,51 @@ export interface operations {
             };
         };
     };
+    update_me_api_v1_auth_me_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            /** @description Falta un token de autenticación válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El username ya está asociado a otro perfil */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Campos o formatos no válidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     create_media_upload_api_v1_posts_media_uploads_post: {
         parameters: {
             query?: never;
@@ -737,7 +810,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MediaUploadResponse"];
+                    "application/json": components["schemas"]["CommentMediaUploadResponse"];
                 };
             };
             /** @description Falta un token de autenticación válido */

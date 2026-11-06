@@ -14,6 +14,8 @@ Desarrollé la aplicación web de Pet Pulse, una comunidad digital para conectar
 - Feed de publicaciones conectado a la API.
 - Creación de publicaciones y comentarios, con soporte para imágenes.
 - Interacción para dar y quitar "me gusta" en publicaciones.
+- Edición del perfil, incluido el username, el nombre y la foto de perfil.
+- Perfiles públicos con publicaciones y datos básicos del usuario.
 - Rutas protegidas para el feed, creación de publicaciones, notificaciones y ajustes.
 - Interfaz adaptable, temas claro y oscuro, y componentes accesibles reutilizables.
 
@@ -32,7 +34,7 @@ La web consume la API FastAPI para las operaciones de autenticación, perfil, pu
 
 ## Estado actual
 
-La aplicación web está preparada para desplegarse en Vercel y requiere configurar las variables de entorno y la URL de la API. Las páginas públicas de perfil y publicación todavía muestran estados de capacidad pendiente porque la API aún no ofrece consultas públicas para esos recursos. La edición de perfil y las notificaciones también están pendientes de soporte en la API. La confirmación de correo requiere que el backend configure la URL de redirección correspondiente.
+La aplicación web está preparada para desplegarse en Vercel y requiere configurar las variables de entorno y la URL de la API. Los perfiles públicos y su edición consumen los endpoints de la API. La pantalla de notificaciones todavía está pendiente de soporte en el backend. La confirmación de correo requiere que el backend configure la URL de redirección correspondiente.
 
 ## Enlaces
 

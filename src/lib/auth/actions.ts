@@ -1,12 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 import { api } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type AuthActionState = { error?: string; success?: string };
+export type ProfileActionState = AuthActionState;
 
 function value(formData: FormData, name: string) {
   const field = formData.get(name);
@@ -77,6 +79,67 @@ export async function signupAction(
       error: "Your account was created, but we could not save the session.",
     };
   redirect(safeDestination(value(formData, "next")));
+}
+
+export async function updateProfileAction(
+  _previous: ProfileActionState,
+  formData: FormData,
+): Promise<ProfileActionState> {
+  const username = value(formData, "username").trim();
+  const fullName = value(formData, "full_name").trim();
+  const photoUrl = value(formData, "photo_url").trim();
+
+  if (!/^[A-Za-z0-9_]{3,50}$/.test(username)) {
+    return {
+      error:
+        "Username must be 3–50 characters and use only letters, numbers, or underscores.",
+    };
+  }
+  if (fullName.length > 120) {
+    return { error: "Name must be 120 characters or fewer." };
+  }
+  if (photoUrl) {
+    try {
+      const parsedUrl = new URL(photoUrl);
+      if (
+        !["http:", "https:"].includes(parsedUrl.protocol) ||
+        photoUrl.length > 2048
+      ) {
+        return { error: "Enter a valid HTTP or HTTPS photo URL." };
+      }
+    } catch {
+      return { error: "Enter a valid HTTP or HTTPS photo URL." };
+    }
+  }
+
+  const { data: currentProfile, error: currentProfileError } =
+    await api.GET("/api/v1/auth/me");
+  if (currentProfileError || !currentProfile) {
+    return {
+      error: "Your session could not be verified. Please sign in again.",
+    };
+  }
+
+  const { error, response } = await api.PATCH("/api/v1/auth/me", {
+    body: {
+      username,
+      full_name: fullName || null,
+      photo_url: photoUrl || null,
+    },
+  });
+
+  if (response.status === 401) redirect("/login?next=/settings");
+  if (response.status === 409) {
+    return { error: "That username is already taken. Choose another one." };
+  }
+  if (error) return { error: errorMessage(error) };
+
+  revalidatePath("/settings");
+  revalidatePath(`/${encodeURIComponent(currentProfile.username)}`);
+  revalidatePath(`/${encodeURIComponent(username)}`);
+  revalidatePath("/feed");
+
+  return { success: "Profile updated." };
 }
 
 export async function signOutAction() {

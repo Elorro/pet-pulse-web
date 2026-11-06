@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { api } from "@/lib/api/client";
 import { SettingsCommandPalette } from "@/components/arc/settings-command-palette";
+import { ProfileForm } from "@/components/profile/profile-form";
 
 import {
   Card,
@@ -19,11 +20,21 @@ export default async function SettingsPage() {
       <h1 className="mb-6 text-3xl font-semibold tracking-tight">Settings</h1>
       <Card>
         <CardHeader>
-          <CardTitle>Your account</CardTitle>
+          <CardTitle>Your profile</CardTitle>
           <CardDescription>
-            Profile editing is not available in the API yet.
+            Update the details people see on your public profile.
           </CardDescription>
         </CardHeader>
+        {profile ? (
+          <div className="px-6 pb-6">
+            <ProfileForm
+              fullName={profile.full_name}
+              photoUrl={profile.photo_url}
+              userId={profile.id}
+              username={profile.username}
+            />
+          </div>
+        ) : null}
       </Card>
       {profile && (
         <section className="mt-8 space-y-3">
