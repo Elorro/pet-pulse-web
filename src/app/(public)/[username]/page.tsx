@@ -63,14 +63,10 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
     ownProfileResult.data?.username === username
       ? ownProfileResult.data
       : undefined;
-  const avatarUrl =
-    author?.photo_url ??
-    (
-      ownProfile as
-        (typeof ownProfile & { avatar_url?: string | null }) | undefined
-    )?.avatar_url;
+  const avatarUrl = author?.photo_url ?? ownProfile?.photo_url;
   const seed = author?.id ?? ownProfile?.id ?? username;
-  const initials = (author?.full_name || username).slice(0, 2).toUpperCase();
+  const fullName = author?.full_name ?? ownProfile?.full_name;
+  const initials = (fullName || username).slice(0, 2).toUpperCase();
 
   return (
     <main className="mx-auto max-w-4xl px-5 pt-12 pb-20 sm:px-8">
@@ -86,7 +82,7 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
           <AvatarFallback seed={seed}>{initials}</AvatarFallback>
         </Avatar>
         <h1 className="mt-6 text-3xl font-semibold tracking-tight">
-          {author?.full_name || username}
+          {fullName || username}
         </h1>
         <p className="text-muted-foreground mt-2">@{username}</p>
       </section>

@@ -77,6 +77,10 @@ When signup returns `requires_email_confirmation: true`, the UI asks the person 
 
 The profile route uses the public `GET /api/v1/posts/by-username/{username}` query with `limit` and `offset`, so it renders only posts selected by the API. The endpoint returns the public author fields needed by the profile and post cards, returns `404` for an unknown username, and returns `200 []` for a profile with no posts. The community feed continues to use the unfiltered `GET /api/v1/posts/`. When the API changes, regenerate `src/lib/api/schema.d.ts` from its OpenAPI document.
 
+### API handoff: profile editing
+
+Settings updates the authenticated profile through `PATCH /api/v1/auth/me`. Profile photos use `POST /api/v1/posts/media-uploads`; the web client uploads the file to `upload_url` and saves the returned `public_url` as `photo_url`. Keep the profile upload response and generated OpenAPI schema in sync when changing this flow.
+
 ## UI components
 
 The registries copy source code into this repository. Keep the interface cohesive by using each source only for its assigned role:
@@ -119,7 +123,7 @@ Visit `/dev/components` in development to review the installed components in lig
 
 ```text
 .github/workflows/ci.yml       CI checks on pushes to main and pull requests
-src/app/(public)/              Landing page and public profile/post placeholders
+src/app/(public)/              Landing page and public profile/post pages
 src/app/(auth)/                Signup and login pages
 src/app/(app)/                 Protected feed, notifications, and settings
 src/app/auth/callback/          Supabase auth callback route handler

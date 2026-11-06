@@ -48,6 +48,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           <ThemeToggle />
           <UserMenu
             email={profile.email}
+            photoUrl={profile.photo_url}
             userId={profile.id}
             username={profile.username}
           />

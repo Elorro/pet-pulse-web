@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { LogOut, UserRound } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +16,12 @@ import { signOutAction } from "@/lib/auth/actions";
 export function UserMenu({
   userId,
   username,
+  photoUrl,
 }: {
   userId: string;
   username: string;
   email: string | null;
+  photoUrl: string | null;
 }) {
   const initials = username.slice(0, 2).toUpperCase();
 
@@ -30,6 +32,7 @@ export function UserMenu({
         className="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full border border-transparent bg-clip-padding pr-3 pl-1.5 text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-3"
       >
         <Avatar className="size-8">
+          {photoUrl ? <AvatarImage alt="" src={photoUrl} /> : null}
           <AvatarFallback seed={userId}>{initials}</AvatarFallback>
         </Avatar>
         <span className="hidden max-w-32 truncate sm:inline">{username}</span>
