@@ -4,6 +4,28 @@
  */
 
 export interface paths {
+    "/api/v1/notifications/": {
+        parameters: { query?: { limit?: number; offset?: number }; header?: never; path?: never; cookie?: never };
+        get: operations["list_notifications"];
+        put?: never; post?: never; delete?: never; options?: never; head?: never; patch?: never; trace?: never;
+    };
+    "/api/v1/notifications/unread-count": {
+        parameters: { query?: never; header?: never; path?: never; cookie?: never };
+        get: operations["unread_count"];
+        put?: never; post?: never; delete?: never; options?: never; head?: never; patch?: never; trace?: never;
+    };
+    "/api/v1/notifications/{notification_id}/read": {
+        parameters: { query?: never; header?: never; path: { notification_id: string }; cookie?: never };
+        get?: never; put?: never; post?: never; delete?: never; options?: never; head?: never;
+        patch: operations["mark_notification_read"];
+        trace?: never;
+    };
+    "/api/v1/notifications/read-all": {
+        parameters: { query?: never; header?: never; path?: never; cookie?: never };
+        get?: never; put?: never; post?: never; delete?: never; options?: never; head?: never;
+        patch: operations["mark_all_notifications_read"];
+        trace?: never;
+    };
     "/api/v1/auth/signup": {
         parameters: {
             query?: never;
@@ -250,6 +272,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        NotificationActor: { id: string; username: string; full_name: string | null; photo_url: string | null };
+        NotificationPost: { id: string; content: string; media_url: string | null };
+        Notification: { id: string; type: "like" | "comment"; created_at: string; read_at: string | null; actor: components["schemas"]["NotificationActor"]; post: components["schemas"]["NotificationPost"]; comment_content: string | null };
+        UnreadCountResponse: { count: number };
+        MarkAllReadResponse: { updated_count: number };
         /** CommentAuthorResponse */
         CommentAuthorResponse: {
             /**
@@ -1171,5 +1198,25 @@ export interface operations {
                 };
             };
         };
+    };
+    list_notifications: {
+        parameters: { query?: { limit?: number; offset?: number }; header?: never; path?: never; cookie?: never };
+        requestBody?: never;
+        responses: { 200: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["Notification"][] } }; 401: { headers: { [name: string]: unknown }; content?: never }; 422: { headers: { [name: string]: unknown }; content?: never } };
+    };
+    unread_count: {
+        parameters: { query?: never; header?: never; path?: never; cookie?: never };
+        requestBody?: never;
+        responses: { 200: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["UnreadCountResponse"] } }; 401: { headers: { [name: string]: unknown }; content?: never } };
+    };
+    mark_notification_read: {
+        parameters: { query?: never; header?: never; path: { notification_id: string }; cookie?: never };
+        requestBody?: never;
+        responses: { 204: { headers: { [name: string]: unknown }; content?: never }; 401: { headers: { [name: string]: unknown }; content?: never }; 404: { headers: { [name: string]: unknown }; content?: never } };
+    };
+    mark_all_notifications_read: {
+        parameters: { query?: never; header?: never; path?: never; cookie?: never };
+        requestBody?: never;
+        responses: { 200: { headers: { [name: string]: unknown }; content: { "application/json": components["schemas"]["MarkAllReadResponse"] } }; 401: { headers: { [name: string]: unknown }; content?: never } };
     };
 }

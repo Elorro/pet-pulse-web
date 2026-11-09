@@ -16,6 +16,10 @@ const navigation = [
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const { data: profile, error } = await api.GET("/api/v1/auth/me");
   if (error || !profile) redirect("/login?next=/feed");
+  const { data: unread } = await api.GET(
+    "/api/v1/notifications/unread-count",
+    {},
+  );
 
   return (
     <div className="bg-muted/40 min-h-screen">
@@ -34,11 +38,21 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           >
             {navigation.map(({ href, label }) => (
               <Link
+                aria-label={
+                  href === "/notifications" && unread?.count
+                    ? `${label}, ${unread.count} unread`
+                    : undefined
+                }
                 className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg px-3 py-2 text-sm font-medium transition-colors"
                 href={href}
                 key={href}
               >
                 {label}
+                {href === "/notifications" && unread?.count ? (
+                  <span className="bg-primary text-primary-foreground ml-2 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] leading-none">
+                    {unread.count > 99 ? "99+" : unread.count}
+                  </span>
+                ) : null}
               </Link>
             ))}
           </nav>
