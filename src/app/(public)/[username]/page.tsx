@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PostCard } from "@/components/posts/post-card";
+import { FollowControls } from "@/components/profile/follow-controls";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
@@ -66,6 +67,12 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
   const avatarUrl = author?.photo_url ?? ownProfile?.photo_url;
   const seed = author?.id ?? ownProfile?.id ?? username;
   const fullName = author?.full_name ?? ownProfile?.full_name;
+  const profileId = author?.id ?? ownProfile?.id;
+  const followStatus = profileId
+    ? await api.GET("/api/v1/profiles/{profile_id}/follow-status", {
+        params: { path: { profile_id: profileId } },
+      })
+    : undefined;
   const initials = (fullName || username).slice(0, 2).toUpperCase();
 
   return (
@@ -85,6 +92,9 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
           {fullName || username}
         </h1>
         <p className="text-muted-foreground mt-2">@{username}</p>
+        {profileId && followStatus?.data && ownProfile?.id !== profileId ? (
+          <FollowControls profileId={profileId} following={followStatus.data.following} followedBy={followStatus.data.followed_by} />
+        ) : null}
       </section>
 
       <section aria-labelledby="profile-posts-heading" className="mt-8">

@@ -15,7 +15,7 @@ import {
 } from "@/lib/notifications/actions";
 import type { components } from "@/lib/api/schema";
 
-type Notification = components["schemas"]["Notification"];
+type Notification = components["schemas"]["NotificationResponse"];
 
 export function NotificationsList({
   notifications,
