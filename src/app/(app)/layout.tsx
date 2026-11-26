@@ -10,6 +10,7 @@ import { api } from "@/lib/api/client";
 
 const navigation = [
   { href: "/feed", label: "Feed" },
+  { href: "/search", label: "Find people" },
   { href: "/notifications", label: "Notifications" },
 ];
 

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Bell, Heart, MessageCircle } from "lucide-react";
+import { Bell, Heart, MessageCircle, UserPlus } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,8 @@ export function NotificationsList({
       {items.length ? (
         items.map((notification) => {
           const actor = notification.actor;
-          const Icon = notification.type === "like" ? Heart : MessageCircle;
+          const Icon = notification.type === "like" ? Heart : notification.type === "follow" ? UserPlus : MessageCircle;
+          const destination = notification.type === "follow" ? `/${encodeURIComponent(actor.username)}` : notification.post ? `/post/${notification.post.id}` : "/notifications";
           return (
             <Card
               key={notification.id}
@@ -111,14 +112,16 @@ export function NotificationsList({
                 <div className="min-w-0 flex-1">
                   <Link
                     className="leading-6 hover:underline"
-                    href={`/post/${notification.post.id}`}
+                    href={destination}
                   >
                     <span className="font-semibold">
                       {actor.full_name || `@${actor.username}`}
                     </span>{" "}
                     {notification.type === "like"
                       ? "liked your post."
-                      : "commented on your post."}
+                      : notification.type === "follow"
+                        ? "started following you."
+                        : "commented on your post."}
                   </Link>
                   {notification.type === "comment" &&
                   notification.comment_content ? (
@@ -131,7 +134,7 @@ export function NotificationsList({
                       {new Date(notification.created_at).toLocaleString()}
                     </time>
                   </p>
-                  {notification.post.media_url ? (
+                  {notification.post?.media_url ? (
                     <Link
                       className="mt-2 block w-fit"
                       href={`/post/${notification.post.id}`}

@@ -31,11 +31,12 @@ export async function generateMetadata({
 
 export default async function PublicProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
-  const [postsResult, ownProfileResult] = await Promise.all([
+  const [postsResult, ownProfileResult, profileResult] = await Promise.all([
     api.GET("/api/v1/posts/by-username/{username}", {
       params: { path: { username }, query: { limit: 20, offset: 0 } },
     }),
     api.GET("/api/v1/auth/me"),
+    api.GET("/api/v1/profiles/username/{username}", { params: { path: { username } } }),
   ]);
 
   const posts = postsResult.data;
@@ -60,14 +61,15 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
   }
 
   const author = posts[0]?.author;
+  const profile = profileResult.data;
   const ownProfile =
     ownProfileResult.data?.username === username
       ? ownProfileResult.data
       : undefined;
-  const avatarUrl = author?.photo_url ?? ownProfile?.photo_url;
-  const seed = author?.id ?? ownProfile?.id ?? username;
-  const fullName = author?.full_name ?? ownProfile?.full_name;
-  const profileId = author?.id ?? ownProfile?.id;
+  const avatarUrl = profile?.photo_url ?? author?.photo_url ?? ownProfile?.photo_url;
+  const seed = profile?.id ?? author?.id ?? ownProfile?.id ?? username;
+  const fullName = profile?.full_name ?? author?.full_name ?? ownProfile?.full_name;
+  const profileId = profile?.id ?? author?.id ?? ownProfile?.id;
   const followStatus = profileId
     ? await api.GET("/api/v1/profiles/{profile_id}/follow-status", {
         params: { path: { profile_id: profileId } },

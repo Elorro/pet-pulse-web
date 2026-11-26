@@ -241,6 +241,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/profiles/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Buscar perfiles por username o nombre visible */
+        get: operations["search_profiles_api_v1_profiles_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profiles/username/{username}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consultar un perfil por username */
+        get: operations["get_profile_by_username_api_v1_profiles_username__username__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/profiles/{profile_id}/follow": {
         parameters: {
             query?: never;
@@ -580,8 +614,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
-            /** Type */
-            type: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "like" | "comment" | "follow";
             /**
              * Created At
              * Format: date-time
@@ -590,7 +627,7 @@ export interface components {
             /** Read At */
             read_at: string | null;
             actor: components["schemas"]["NotificationActor"];
-            post: components["schemas"]["NotificationPost"];
+            post: components["schemas"]["NotificationPost"] | null;
             /** Comment Content */
             comment_content: string | null;
         };
@@ -724,6 +761,20 @@ export interface components {
             full_name?: string | null;
             /** Photo Url */
             photo_url?: string | null;
+        };
+        /** PublicProfile */
+        PublicProfile: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Username */
+            username: string;
+            /** Full Name */
+            full_name: string | null;
+            /** Photo Url */
+            photo_url: string | null;
         };
         /** RefreshRequest */
         RefreshRequest: {
@@ -1387,6 +1438,91 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LikeResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_profiles_api_v1_profiles_search_get: {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicProfile"][];
+                };
+            };
+            /** @description Falta un token de autenticación válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_profile_by_username_api_v1_profiles_username__username__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicProfile"];
+                };
+            };
+            /** @description Falta un token de autenticación válido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No existe el perfil */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
